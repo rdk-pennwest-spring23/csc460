@@ -1,0 +1,40 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{lastpage}
+
+\date{}
+\author{Robert Krency}
+\title{Homework #1}
+
+% Geometry 
+\usepackage{geometry}
+\geometry{letterpaper, left=20mm, top=20mm, right=20mm, bottom=20mm}
+
+% Fancy Header
+\usepackage{fancyhdr}
+\fancyhf{}
+\lhead{CSC 475}
+\rhead{Krency}
+\cfoot{Page \thepage \hspace{1pt} of \pageref{LastPage}}
+
+% Add vertical spacing to tables
+\renewcommand{\arraystretch}{1.4}
+
+% Document
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\begin{enumerate}
+
+    \item $G = ({S, A, B}, {a,b}, S, (S \to aA, S \to \lambda, A \to bB, A \to \lambda, B \to \lambda))$
+    \begin{itemize}
+        \item $L(G) = {\lambda, a, ab}$
+    \end{itemize}
+
+\end{enumerate}
+
+\end{document}
