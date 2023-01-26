@@ -1,14 +1,30 @@
 // Contains main routine //
 
 #include "file_util.h"
+#include <regex.h>
 
 int main(int argc, char *argv[])
 {
 
 	// Prompt for user input
 		// User must enter two parameters, input file and output file
-		
-	printf("Please enter the names of an existing input file and a desired output file:\n");
+	
+	regex_t filenameRegex;
+	char* inputFileName = argv[1], outputFileName = argv[2];
+	int flag;
+
+	flag = regcomp(&filenameRegex, "^[^~)('!*<>:;,?\"*|/]+$", 0);
+	if (flag) 
+	{
+		fprintf(stderr, "Error initializing filename regex.");
+		exit(1);
+	}
+
+	flag = regexec(&filenameRegex, inputFileName, 0, NULL, 0);
+	if (!flag)
+	{
+		puts("Input file name is a valid filepath.");
+	}
 		
 	// Call file utility functions
 	
