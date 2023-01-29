@@ -2,6 +2,10 @@
 
 ## Due February 2, 2023
 
+To build this program, run `make` in this directory.
+
+To run this program, run `a1g3` in the `build` directory.
+
 Accompanying Documentation:
 - [Assignment Description](docs/fileopenassignment.pdf)
 - [Rubric](docs/fileopenrubric.pdf)

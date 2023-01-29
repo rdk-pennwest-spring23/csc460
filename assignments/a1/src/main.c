@@ -1,10 +1,14 @@
 // Contains main routine //
 
 #include "file_util.h"
+#include "log_util.h"
+
 #include <regex.h>
 
 int main(int argc, char *argv[])
 {
+	// Initialize Logging
+	set_log_to_file(); // Comment out this line to turn off logging to file
 
 	// Prompt for user input
 		// User must enter two parameters, input file and output file
@@ -34,6 +38,7 @@ int main(int argc, char *argv[])
 		
 	// Include code to delete temporary file, but comment out for the assignment
 
-	system("PAUSE");
+	// Clean up.
+	end_log_to_file();
 	return 0;
 }
