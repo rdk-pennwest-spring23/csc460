@@ -10,25 +10,21 @@ int main(int argc, char *argv[])
 	// Initialize Logging
 	set_log_to_file(); // Comment out this line to turn off logging to file
 
+	// Check if there are command line arguments input
+	if (argc > 1) 
+	{
+		
+	}
+
+
+
 	// Prompt for user input
 		// User must enter two parameters, input file and output file
 	
-	regex_t filenameRegex;
-	char* inputFileName = argv[1], outputFileName = argv[2];
-	int flag;
+	char *inputFileName = argv[1], *outputFileName = argv[2];
 
-	flag = regcomp(&filenameRegex, "^[^~)('!*<>:;,?\"*|/]+$", 0);
-	if (flag) 
-	{
-		fprintf(stderr, "Error initializing filename regex.");
-		exit(1);
-	}
-
-	flag = regexec(&filenameRegex, inputFileName, 0, NULL, 0);
-	if (!flag)
-	{
-		puts("Input file name is a valid filepath.");
-	}
+	log_message("MAIN", inputFileName);
+	log_message("MAIN", outputFileName);
 		
 	// Call file utility functions
 	

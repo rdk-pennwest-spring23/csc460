@@ -26,7 +26,7 @@ void set_log_to_file()
         time(&now);
         struct tm *curTime = localtime(&now);
 
-        snprintf(logFileName, sizeof(logFileName), "log-%02d:%02d:%02d.txt",
+        snprintf(logFileName, sizeof(logFileName), "log-%02d-%02d-%02d.txt",
             curTime->tm_hour, 
             curTime->tm_min, 
             curTime->tm_sec);
