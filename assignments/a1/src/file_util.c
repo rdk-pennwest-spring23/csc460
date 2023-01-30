@@ -1,48 +1,63 @@
 // Contains file open routine, support routines //
 
 #include "file_util.h"
-
+#include "log_util.h"
+#include <stdio.h>
+#include <string.h>
 
 // FUNCTION DEFINITIONS //
 
 
-// When called by main, get user input
-// Follow the format "fileopen input_file output_file"
-// All file names may include drive and path
 
-	// If only "fileopen" entered
-		// Prompt for input and output file names
-	
-	// If only input file entered
-		// If no extension given, default to .in
-		// Prompt for output file name
-	
-	// If input and output file entered
-		// If no extensions given, default to .in and .out
-		
-	// If there is a missing parameter, prompt user again
-	
-// Validate input file to already exist
-	// If it does not, reprompt for file name until a valid one is entered
-	// If no name is entered, terminate program
+int check_ext(char* fileName)
+{
+	int hasExt = 0;
+	for (int i = 0; i < strlen(fileName) && !hasExt; i++)
+		if (fileName[i] == '.')
+			hasExt = 1;
+	return hasExt;
+}
 
-// Validate output file to NOT already exist
-	// If it does exist, the user can either:
-		// Re-enter a file name
-		// Overwrite the file entered
-			// In this case, back up existing output file with a .bak extension and use name for new output file
-			// Account for existing backup files
-		// Use a default file name
-			// When no name is entered, the input file name is used for the output file, but with a .out extension
-			// If this file already exists, use same rules for overwriting
-		// Terminate the program
-	// If it does not exist, create the file
-		
-// Create temporary file
-	// Can use any name and extension, but cannot overwrite existing file
+int check_file_exists(char* fileName)
+{
+    FILE *fp = fopen(fileName, "r");
+    int is_exist = 0;
+    if (fp != NULL)
+    {
+        is_exist = 1;
+        fclose(fp); // close the file
+    }
+    return is_exist;
+}
 
-// Create listing file
-	// Uses output file name but with .lis extension
-		// Apply same rules for overwriting as with output file
-		
-// Indicate if files are open or not
+
+void backup_file(char* fileName)
+{
+	log_message("MAIN", "Creating a backup of the file.");
+	char backup_name[strlen(fileName) + 4];
+	strcpy(backup_name, fileName);
+	strcat(backup_name, ".bak");
+
+	FILE* file = fopen(fileName, "r");
+	FILE* backup = fopen(backup_name, "w");
+
+	char ch = fgetc(file);
+	while (ch != EOF)
+	{
+		fputc(ch, backup);
+		ch = fgetc(file);
+	}
+
+	fclose(file);
+	fclose(backup);
+
+	log_message("MAIN", "Backup created.");
+}
+
+void delete_file(char* fileName)
+{
+	if (remove(fileName) == 0)
+		log_message("MAIN", "Deleted file successfully.");
+	else
+		log_message("MAIN", "Unable to delete file.");
+}

@@ -2,7 +2,7 @@
  * @file log_util.h
  * @author Robert Krency (kre1188@pennwest.edu)
  * @author Cody Long ()
- * @author Noelle Nieves ()
+ * @author Noelle Nieves (nie9236@pennwest.edu)
  * @brief Logging utilities.
  * 
  */

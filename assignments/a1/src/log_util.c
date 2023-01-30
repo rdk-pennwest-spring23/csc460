@@ -1,8 +1,8 @@
 /**
  * @file log_util.c
  * @author Robert Krency (kre1188@pennwest.edu)
- * @author Cody Long ()
- * @author Noelle Nieves ()
+ * @author Cody Long (lon1150@pennwest.edu)
+ * @author Noelle Nieves (nie9236@pennwest.edu)
  * @brief Logging utilities.
  * 
  */
@@ -34,6 +34,7 @@ void set_log_to_file()
         logFile = fopen(logFileName, "a");
         logStatus = LOG_TO_FILE_TRUE;
         log_message("LOG", "Logging to file enabled.");
+        fprintf(logFile, "%s", "");
     }
 }
 
@@ -71,5 +72,5 @@ void log_message(char *sender, char *message)
 
     // Print message to log file
     if (logStatus == LOG_TO_FILE_TRUE)
-        fprintf(logFile, printMesssage);
+        fprintf(logFile, "%s", printMesssage);
 }
