@@ -1,3 +1,13 @@
+/**
+ * @file file_util.c
+ * @Group 2
+ * @Program Program 1: File Opener
+ * @author Robert Krency (kre1188@pennwest.edu)
+ * @author Cody Long (lon1150@pennwest.edu)
+ * @author Noelle Nieves (nie9236@pennwest.edu)
+ * @brief 
+ * 
+ */
 // Contains file open routine, support routines //
 
 #include "file_util.h"
@@ -33,7 +43,7 @@ int check_file_exists(char* fileName)
 
 void backup_file(char* fileName)
 {
-	log_message("MAIN", "Creating a backup of the file.");
+	log_message("Creating a backup of the file.");
 	char backup_name[strlen(fileName) + 4];
 	strcpy(backup_name, fileName);
 	strcat(backup_name, ".bak");
@@ -41,23 +51,42 @@ void backup_file(char* fileName)
 	FILE* file = fopen(fileName, "r");
 	FILE* backup = fopen(backup_name, "w");
 
-	char ch = fgetc(file);
-	while (ch != EOF)
-	{
-		fputc(ch, backup);
-		ch = fgetc(file);
-	}
+	copy_file(backup, file);
 
 	fclose(file);
 	fclose(backup);
 
-	log_message("MAIN", "Backup created.");
+	log_message("Backup created.");
 }
 
 void delete_file(char* fileName)
 {
 	if (remove(fileName) == 0)
-		log_message("MAIN", "Deleted file successfully.");
+		log_message("Deleted file successfully.");
 	else
-		log_message("MAIN", "Unable to delete file.");
+		log_message("Unable to delete file.");
+}
+
+void copy_file(FILE* dest, FILE* source)
+{
+	char ch = fgetc(source);
+	while (ch != EOF)
+	{
+		fputc(ch, dest);
+		ch = fgetc(source);
+	}
+	rewind(source);
+}
+
+FILE* open_file(char* fileName, char* c){
+	FILE *fp = fopen(fileName, c);
+
+	if(NULL != fp){
+		log_message("Opened %s.", fileName);
+	}
+	else{
+		log_message("Unable to open %s.", fileName);
+	}
+
+	return fp;
 }

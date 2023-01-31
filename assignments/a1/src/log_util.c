@@ -33,7 +33,7 @@ void set_log_to_file()
 
         logFile = fopen(logFileName, "a");
         logStatus = LOG_TO_FILE_TRUE;
-        log_message("LOG", "Logging to file enabled.");
+        log_message("Logging to file enabled.");
         fprintf(logFile, "%s", "");
     }
 }
@@ -45,32 +45,41 @@ void end_log_to_file()
     {
         fclose(logFile);
         logStatus = LOG_TO_FILE_FALSE;
-        log_message("LOG", "Logging to file disabled.");
+        log_message("Logging to file disabled.");
     }
 }
 
+void log_format(const char* tag, const char* message, va_list args) 
+{   
+    time_t now;     
+    time(&now);     
+    char * date =ctime(&now);   
+    date[strlen(date) - 1] = '\0';  
+    printf("[%s] [%s]", date, tag);  
+    vprintf(message, args);
+    printf("\n"); 
+}
 
-void log_message(char *sender, char *message)
+void log_error(const char* message, ...) 
+{  
+    va_list args;   
+    va_start(args, message);    
+    log_format("ERROR", message, args);     
+    va_end(args); 
+}
+
+void log_message(const char* message, ...) 
+{   
+    va_list args;   
+    va_start(args, message);    
+    log_format("INFO", message, args);  
+    va_end(args); 
+}
+
+void log_debug(const char* message, ...) 
 {
-    // Print the time
-    time_t now;
-    time(&now);
-    struct tm *curTime = localtime(&now);
-
-    // Setup the message
-    char printMesssage[strlen(message) + strlen(sender) + 32];
-    snprintf(printMesssage, sizeof(printMesssage), "[%02d:%02d:%02d] [%s] %s\n", 
-        curTime->tm_hour, 
-        curTime->tm_min, 
-        curTime->tm_sec,
-        sender,
-        message
-    );
-
-    // Print message to console
-    printf("%s", printMesssage);
-
-    // Print message to log file
-    if (logStatus == LOG_TO_FILE_TRUE)
-        fprintf(logFile, "%s", printMesssage);
+    va_list args;   
+    va_start(args, message);    
+    log_format("DEBUG", message, args);     
+    va_end(args);
 }

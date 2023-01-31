@@ -1,9 +1,11 @@
 /**
  * @file log_util.h
+ * @Group 2
+ * @Program Program 1: File Opener
  * @author Robert Krency (kre1188@pennwest.edu)
- * @author Cody Long ()
+ * @author Cody Long (lon1150@pennwest.edu)
  * @author Noelle Nieves (nie9236@pennwest.edu)
- * @brief Logging utilities.
+ * @brief 
  * 
  */
 
@@ -17,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdarg.h>
 
 /**
  * @brief Sets up the logging module
@@ -36,6 +39,9 @@ void end_log_to_file();
  * @param sender The sender's ID
  * @param message Message to be logged
  */
-void log_message(char *sender, char *message);
+void log_message(const char* message, ...); 
+
+void log_error(const char* message, ...); 
+void log_debug(const char* message, ...);
 
 #endif

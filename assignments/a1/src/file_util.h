@@ -1,3 +1,13 @@
+/**
+ * @file file_util.h
+ * @Group 2
+ * @Program Program 1: File Opener
+ * @author Robert Krency (kre1188@pennwest.edu)
+ * @author Cody Long (lon1150@pennwest.edu)
+ * @author Noelle Nieves (nie9236@pennwest.edu)
+ * @brief 
+ * 
+ */
 // Global constants, #includes //
 
 #ifndef FILE_UTIL
@@ -53,5 +63,15 @@ void backup_file(char* fileName);
  */
 void delete_file(char* fileName);
 
+/**
+ * @brief 
+ * 
+ */
+void copy_file(FILE* dest, FILE* source);
 
+/**
+ * @brief 
+ * 
+ */
+FILE* open_file(char* fileName, char* c);
 #endif
