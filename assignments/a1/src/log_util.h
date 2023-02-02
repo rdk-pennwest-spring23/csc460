@@ -5,7 +5,8 @@
  * @author Robert Krency (kre1188@pennwest.edu)
  * @author Cody Long (lon1150@pennwest.edu)
  * @author Noelle Nieves (nie9236@pennwest.edu)
- * @brief 
+ * @class CSC 460 Language Translations
+ * @brief A set of logging functions from https://stackoverflow.com/a/23446001
  * 
  */
 
@@ -39,8 +40,7 @@ void end_log_to_file();
  * @param sender The sender's ID
  * @param message Message to be logged
  */
-void log_message(const char* message, ...); 
-
+void log_info(const char* message, ...); 
 void log_error(const char* message, ...); 
 void log_debug(const char* message, ...);
 

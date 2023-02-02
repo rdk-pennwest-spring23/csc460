@@ -1,6 +1,6 @@
 
 # Do all the things.
 build:
-	gcc src/*.h src/*.c -o build/g2fileopen
+	gcc -std=c99 src/*.h src/*.c -o build/g2fileopen
 	@echo "Finished building."
  

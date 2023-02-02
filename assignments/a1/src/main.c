@@ -5,6 +5,7 @@
  * @author Robert Krency (kre1188@pennwest.edu)
  * @author Cody Long (lon1150@pennwest.edu)
  * @author Noelle Nieves (nie9236@pennwest.edu)
+ * @class CSC 460 Language Translations
  * @brief 
  * 
  */
@@ -15,61 +16,43 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+
+int get_new_file_name(char* fileName, char* extension, int fileCanExist, enum fileStatus fileStatus);
 
 int main(int argc, char *argv[])
 {
-	// Initialize Logging
-	set_log_to_file(); // Comment out this line to turn off logging to file
-
 	int quit = 0;
-	char inputFileName[128], outputFileName[128];
+	enum fileStatus fileStatus = VALID_FILE_NAME;
+
+	char inputFileName[MAX_FILE_NAME_SIZE], outputFileName[MAX_FILE_NAME_SIZE], listingFileName[MAX_FILE_NAME_SIZE];
 	inputFileName[0] = '\0';
 	outputFileName[0] = '\0';
+	listingFileName[0] = '\0';
+
 
 	// Check if there are command line arguments input
 	if (argc > 1) 
 	{
 		strcpy(inputFileName,argv[1]);
-		log_message("Input file specified on command line.");
+		log_info("Input file %s specified on command line.", inputFileName);
 		if (argc > 2)
 		{
 			strcpy(outputFileName, argv[2]);
-			log_message("Output file specified on command line.");
+			log_info("Output file %s specified on command line.", outputFileName);
 		}
 	}
 
-	// Check for a valid input file
+	// Get a valid input file name
 	int validInput = 0;
 	while (!quit && !validInput)
-	{	
-		// Check if the user has input a file name.
-		if (inputFileName[0] == '\0')
+	{
+		log_info("Validating input file name.");
+		quit = get_new_file_name(inputFileName, ".in", 1, fileStatus);
+		validInput = (fileStatus != INVALID_FILE_NAME);
+		if (!quit && (fileStatus == INVALID_FILE_NAME))
 		{
-			log_message("Getting user input for input file name.");
-			printf("Please enter a name for the input file: ");
-			scanf("%s", inputFileName);
-			log_message("Accepted user input for input file name.");
-		}
-
-		// Check if the file name is missing an extension
-		if (!check_ext(inputFileName))
-		{
-			log_message("File extension missing. Appending '.in' extension to input file name.");
-			char newFileName[strlen(inputFileName) + 3];
-			strcpy(newFileName, inputFileName);
-			strcat(newFileName, ".in");
-			strcpy(inputFileName, newFileName);
-		}
-
-		// Check if the file exists
-		if (check_file_exists(inputFileName))
-		{
-			log_message("Input file exists.");
-			validInput = 1;
-		}
-		else
-		{
-			log_message("Error: Input file does not exist.");
+			log_error("Invalid input file name given: %s", inputFileName);
 			inputFileName[0] = '\0';
 		}
 	}
@@ -78,121 +61,154 @@ int main(int argc, char *argv[])
 	int validOutput = 0;
 	while (!quit && !validOutput)
 	{
-		char* userInput;
-
-		// Check if the user has input a file name.
-		if (outputFileName[0] == '\0')
+		log_info("Validating output file name.");
+		int status;
+		status = get_new_file_name(outputFileName, ".out", 0, fileStatus);
+		validOutput = (fileStatus != INVALID_FILE_NAME);
+		quit = (status == 1);
+		if ((fileStatus == INVALID_FILE_NAME) || (fileStatus == FILE_EXISTS))
 		{
-			// Prompt for an output file name
-			log_message("Getting user input for output file name.");
-			printf("Please enter a name for the output file: ");
-			scanf("%s", outputFileName);
-			log_message("Accepted user input for output file name.");
+			outputFileName[0] = '\0';
 		}
-
-		// Check if the file name is missing an extension
-		if (!check_ext(outputFileName))
+		if (status == 2)
 		{
-			log_message("File extension missing. Appending 'out' extension to input file name.");
-			char newFileName[strlen(outputFileName) + 4];
-			strcpy(newFileName, outputFileName);
-			strcat(newFileName, ".out");
-			strcpy(outputFileName, newFileName);
+			strcpy(outputFileName, inputFileName);
+			strcat(outputFileName, ".out");
+		}
+	}
+
+	// Get a valid listings file name
+	int validListings = 0;
+	while (!quit && !validListings)
+	{
+		log_info("Validating listings file.");
+		strcpy(listingFileName, outputFileName);
+		strcat(listingFileName, ".lis");
+		quit = get_new_file_name(listingFileName, ".lis", 0, fileStatus);
+		validListings = (fileStatus != INVALID_FILE_NAME);
+	}
+	
+	//if user did not quit
+	if(!quit && validInput && validOutput && validListings){
+
+		FILE* inputFile = open_file(inputFileName,"r");
+		FILE* outputFile = open_file(outputFileName,"w");
+		FILE* listingFile = open_file(listingFileName,"w");
+
+		// Open the temp file
+		char tempFileName[MAX_FILE_NAME_SIZE];
+		create_temp_file(tempFileName);
+		FILE *tempFile = open_file(tempFileName, "w");
+
+		// Check files were opened.
+		if ((inputFile != NULL) && (outputFile != NULL) && (listingFile != NULL) && (tempFile != NULL))
+		{
+			log_info("Copying data.");
+				// Read character from input file and write them to output files
+			copy_file(outputFile, inputFile);
+			copy_file(listingFile, inputFile);
+			copy_file(tempFile, inputFile);
+
+			//close files
+			log_info("Closing files.");
+			fclose(inputFile);
+			fclose(outputFile);
+			fclose(listingFile);
+			fclose(tempFile);
+
+			// Delete temp file
+			// delete_file(tempFileName);
 		}
 		
-		// Check if the output file already exists
-		if (check_file_exists(outputFileName))
+	}
+
+	// Clean up.
+	return 0;
+}
+
+/**
+ * @brief Get a new valid file name from the user
+ * 
+ * @param fileName The name of the file
+ * @return int 1 on error, 0 on success
+ */
+int get_new_file_name(char* fileName, char* extension, int fileCanExist, enum fileStatus fileStatus)
+{
+	int status = 0, validFile = 0;
+
+	while ((status != 1) && !validFile)
+	{
+		// Get a new name from the user if there is no name
+		if (strlen(fileName) == 0)
 		{
-			log_message("Output file already exists.");
-			printf("Please choose an option:\n"
-				"\t1) Backup output file.\n"
-				"\t2) Overwrite output file.\n"
-				"\t3) Enter new output file name.\n"
-				"\t4) Quit the program.\n"
+			printf("Please enter file name ('q' to quit): \n>> ");
+			scanf("%s", fileName);
+
+			// Check if the user wants to quit
+			if (strcmp(fileName, "q") == 0)
+			{
+				status = 1;
+				log_info("User opted to quit.");
+			}
+		}
+
+		// Validate the input file name
+		fileStatus = validate_filename(fileName, extension);
+
+		// If the file cannot previously exist, ask user to choose an option to proceed
+		if ((status != 1) && !fileCanExist && (fileStatus == FILE_EXISTS))
+		{
+			log_info("File already exists.");
+			printf("File exists. Please choose an option:\n"
+				"\t1) Backup file.\n"
+				"\t2) Overwrite file.\n"
+				"\t3) Enter new file name.\n"
+				"\t4) Quit the program.\n>> "
 			);
 			char c[128];
-			scanf("%s", c);
+			fgets(c, 8, stdin);
 			
 			switch (c[0])
 			{
 			case '1': // Backup output file.
-				log_message("User opted to backup output file.");
-				backup_file(outputFileName);
-				delete_file(outputFileName);
-				validOutput = 1;
+				log_info("User opted to backup output file.");
+				backup_file(fileName);
+				delete_file(fileName);
+				validFile = 1;
 				break;
 
 			case '2': // Overwrite output file.
-				log_message("User opted to overwrite output file.");
-				delete_file(outputFileName);
-				validOutput = 1;
+				log_info("User opted to overwrite output file.");
+				delete_file(fileName);
+				validFile = 1;
 				break;
 			
 			case '3': // Enter new output file name.
-				log_message("User opted to enter new file name.");
-				outputFileName[0] = '\0';
+				log_info("User opted to enter new file name.");
+				fileName[0] = '\0';
+				break;
+
+			case '\n':
+				log_info("No input from user.");
+				status = 2;
 				break;
 
 			case '4': // Quit the program.
-				log_message("User opted to quit.");
-				quit = 1;
+				log_info("User opted to quit.");
+				status = 1;
 				break;
 			
 			default:
-				log_message("Invalid user selection.");
+				log_info("Invalid user selection.");
 				break;
 			}
 		}
-		else // Output file does not exist.
+		else
 		{
-			validOutput = 1;
-		}
-	}
-	
-	//if user did not quit
-	if(!quit){
-		// If input file opened successfully
-		FILE *in_fp = open_file(inputFileName, "r");
-		if(NULL != in_fp){
-			//log_message("MAIN", "Opening output file.");
-			FILE *out_fp = open_file(outputFileName, "w");
-
-			//create listing file
-			//log_message("MAIN", "Opening listings file.");
-			char *listingFileName = outputFileName;
-			strcat(listingFileName, ".lis");
-			FILE *list_fp = open_file(listingFileName, "w");
-
-			//create temporary file
-			//log_message("MAIN", "Opening temporary file.");
-			char *tempFileName = "temporary.txt";
-			FILE *temp_fp = open_file(tempFileName, "w");
-
-			//if output, listing, and temporary files open successfully
-			if ((NULL != out_fp) && (NULL != list_fp) && (NULL != temp_fp))
-			{
-				log_message("Copying data.");
-				// Read character from input file and write them to output files
-				copy_file(out_fp, in_fp);
-				copy_file(list_fp, in_fp);
-				copy_file(temp_fp, in_fp);
-
-				//close files
-				log_message("Closing files.");
-				fclose(out_fp);
-				fclose(list_fp);
-				fclose(temp_fp);
-			}
-
-			//close input file
-			fclose(in_fp);
-		
-			// Delete the temporary file
-			// delete_file(tempFileName);
+			validFile = 1;
 		}
 	}
 
-	// Clean up.
-	end_log_to_file();
-	return 0;
+	return status;
+
 }
