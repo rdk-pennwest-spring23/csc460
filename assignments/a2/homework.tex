@@ -1,0 +1,186 @@
+\documentclass[12pt]{article}
+
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{lastpage}
+\usepackage{tikz}
+\usetikzlibrary{automata}
+\usepackage{qtree}
+\usepackage{enumitem}
+\usepackage{amsmath}
+
+\date{\today}
+\author{Robert Krency \\ Cody Long \\ Noelle Nieves}
+\title{Assignment 1}
+
+% Geometry 
+\usepackage[margin=1in]{geometry}
+
+% Fancy Header
+\usepackage{fancyhdr}
+\fancyhf{}
+\lhead{CSC 475}
+\rhead{Krency - Long - Nieves}
+\cfoot{Page \thepage \hspace{1pt} of \pageref{LastPage}}
+
+% Add vertical spacing to tables
+\renewcommand{\arraystretch}{1.4}
+
+% Document
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\section*{Q3}
+
+\begin{enumerate}[label=(\alph*)]
+    \item $(ab^*a)|(ba^*b)$
+    \item $a(b?cda)*$
+    \item $(ab^*c)?$
+\end{enumerate}
+
+\section*{Q4}
+
+\subsection*{(a) $(a\ |\ (bc)^*\ d)^+$}
+
+\begin{tikzpicture}
+
+    \begin{scope}[every node/.style={circle,thick,draw}]
+        \node[initial,state] (1) at (0,0) {$q_0$};
+        \node[state,accepting] (2) at (2,0) {$q_1$};
+        \node[state,accepting] (3) at (5,2) {$q_2$};
+        \node[state] (4) at (5,-2) {$q_3$};
+        \node[state] (5) at (2,-2) {$q_4$};
+        \node[state] (6) at (0,4) {$q_5$}; % Unaccepted Node %
+    \end{scope}
+
+    \begin{scope}[every node/.style={fill=white,rectangle}, every edge/.style={draw=blue,very thick}]
+        \path [->] (1) edge node {a} (2);
+        \path [->] (2) edge [loop right] node {a} (2);
+        \path [->] (2) edge node {d} (3);
+        \path [->] (2) edge node {b} (5);
+        \path [->] (3) edge [out=180,in=90] node {a} (2);
+        \path [->] (1) edge [out=45,in=135] node {d} (3);
+        \path [->] (1) edge node {b} (5);
+        \path [->] (3) edge [out=270,in=45] node {b} (5);
+        \path [->] (5) edge node {c} (4);
+        \path [->] (4) edge [out=225,in=315] node {b} (5);
+        \path [->] (4) edge [out=45,in=315] node {d} (3);
+        \path [->] (3) edge [loop right] node {d} (3);
+    \end{scope}
+
+    \begin{scope}[every node/.style={fill=white,rectangle}, every edge/.style={draw=red,very thick,dotted}]
+        \path [->] (1) edge node {c} (6);
+        \path [->] (2) edge node {c} (6);
+        \path [->] (3) edge [out=90,in=0] node {c} (6);
+        \path [->] (5) edge [out=180,in=225,looseness=2.1] node {a,b,d} (6);
+        \path [->] (4) edge [out=0,in=45,looseness=2] node {a,c} (6);
+        \path [->] (6) edge [loop above] node {a,b,c,d} (6);
+    \end{scope}
+
+\end{tikzpicture}
+
+\pagebreak
+\subsection*{(b) $(((0|1)^*(2|3)^+)|0011)$}
+
+\begin{tikzpicture}
+
+    \begin{scope}[every node/.style={circle,thick,draw}]
+        \node[initial,state] (1) at (-2,0) {$q_s$};
+        \node[state] (2) at (10,-2) {$q_u$}; % Unaccepted Node %
+        \node[state] (3) at (1,3) {$q_1$};
+        \node[state] (4) at (4,3) {$q_2$};
+        \node[state] (5) at (6,3) {$q_3$};
+        \node[state,accepting] (6) at (8,3) {$q_4$};
+        \node[state] (7) at (2,-5) {$q_5$};
+        \node[state] (8) at (3,-2) {$q_6$};
+        \node[state, accepting] (9) at (7,-2) {$q_7$};
+        \node[state, accepting] (10) at (7,-7) {$q_8$};
+    \end{scope}
+
+    \begin{scope}[every node/.style={fill=white,rectangle}, every edge/.style={draw=blue,very thick}]
+        % Path for 0011 %
+        \path [->] (1) edge node {0} (3);
+        \path [->] (3) edge node {0} (4);
+        \path [->] (4) edge node {1} (5);
+        \path [->] (5) edge node {1} (6);
+        \path [->] (3) edge [out=270, in=135] node {1} (7);
+        \path [->] (4) edge node {0} (8);
+        \path [->] (5) edge node {0} (8);
+        
+        % Path for other thing. %
+        \path [->] (1) edge [out=315, in=180] node {1} (7); % Path from start
+        \path [->] (1) edge [out=270, in=180, looseness=1.8] node {3} (10); % Path from start
+        \path [->] (1) edge node {2} (9); % Path from start
+        
+        \path [->] (7) edge [loop below] node {1} (7); % Loop if have 1, input 1
+        \path [->] (8) edge [loop left] node {0} (8); % Loop if have 0, input 0
+        \path [->] (9) edge [loop above] node {2} (9); % Loop if have 2, input 2
+        \path [->] (10) edge [loop below] node {3} (10); % Loop if have 3, input 3
+
+        \path [->] (7) edge [out=45,in=280] node {0} (8); % Have 1, Input 0
+        \path [->] (7) edge node {2} (9); % Have 1, Input 2
+        \path [->] (7) edge node {3} (10); % Have 1, Input 3
+        
+        \path [->] (8) edge node {1} (7); % Have 0, Input 1
+        \path [->] (8) edge node {2} (9); % Have 0, Input 2
+        \path [->] (8) edge node {3} (10); % Have 0, Input 3
+
+        \path [->] (9) edge [out=315,in=45] node {3} (10); % Have 2, Input 3
+
+        \path [->] (10) edge node {2} (9); % Have 3, Input 2
+
+    \end{scope}
+
+    \begin{scope}[every node/.style={fill=white,rectangle}, every edge/.style={draw=red,very thick,dotted}]
+        \path [->] (6) edge node {0,1,2,3} (2);
+        \path [->] (5) edge node {2,3} (2);
+        \path [->] (4) edge node {2,3} (2);
+        \path [->] (3) edge node {2,3} (2);
+        \path [->] (9) edge node {0,1} (2); % Have 2, Input 1/0
+        \path [->] (10) edge [out=0, in=270] node {0,1} (2); % Have 3, Input 1/0
+    \end{scope}
+
+\end{tikzpicture}
+
+
+\pagebreak
+\subsection*{(c) $(a $Not$(a))^*aaa$}
+
+\begin{tikzpicture}
+
+    \begin{scope}[every node/.style={circle,thick,draw}]
+        \node[initial,state] (1) at (0,0) {$q_s$}; % Start node
+        \node[state] (2) at (8,-2) {$q_u$}; % Unaccepted Node %
+        \node[state] (3) at (2,2) {$q_1$};
+        \node[state] (4) at (4,2) {$q_2$};
+        \node[state,accepting] (5) at (6,2) {$q_3$};
+        \node[state] (6) at (4,-2) {$q_2$};
+    \end{scope}
+
+    \begin{scope}[every node/.style={fill=white,rectangle}, every edge/.style={draw=blue,very thick}]
+        % Path for 0011 %
+        \path [->] (1) edge node {a} (3);
+        \path [->] (3) edge node {a} (4);
+        \path [->] (4) edge node {a} (5);
+        \path [->] (6) edge node {a} (3);
+        \path [->] (3) edge [out=270, in=180] node {Not(a)} (6);
+
+    \end{scope}
+
+    \begin{scope}[every node/.style={fill=white,rectangle}, every edge/.style={draw=red,very thick,dotted}]
+        \path [->] (5) edge node {a, Not(a)} (2);
+        \path [->] (1) edge [out=270,in=225,looseness=1] node {Not(a)} (2);
+        \path [->] (4) edge [out=270,in=145,looseness=1] node {Not(a)} (2);
+        \path [->] (6) edge node {Not(a)} (2);
+    \end{scope}
+
+\end{tikzpicture}
+
+\section*{Q5}
+
+$\bigl( [1-9][0-9]^*\ |\ 0 \bigr) \ .\ \bigl( [0-9]^*[1-9]\ |\ 0 \bigr) $
+
+
+\end{document}
