@@ -201,7 +201,7 @@ int close_files()
 
 
 /**
- * @brief 
+ * @brief Handles any extras related to generating the listings file.
  * 
  * @param listFilePtr 
  * @return int Success/Failure
@@ -218,7 +218,7 @@ int generate_listings_file(char* listingsFileName)
 
 
 /**
- * @brief 
+ * @brief Handles any extras when generating the temporary file.
  * 
  * @param tempFileName Name of the temporary file.
  * @return int Success/Failure
