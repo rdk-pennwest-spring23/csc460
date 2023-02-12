@@ -1,13 +1,13 @@
 /**
  * @file main.c
- * @Group 2
- * @Program Program 1: File Opener
+ * 
+ * CSC 460 Language Translations
+ * Group 2
  * @author Robert Krency (kre1188@pennwest.edu)
  * @author Cody Long (lon1150@pennwest.edu)
  * @author Noelle Nieves (nie9236@pennwest.edu)
- * @class CSC 460 Language Translations
- * @brief 
  * 
+ * @brief Program 2: Scanner
  */
 
 #include "file_util.h"
@@ -37,5 +37,7 @@ int main(int argc, char *argv[])
 	else
 		log_error("Unable to successfully clean up files.");
 	
+	// End
+	log_info("Finishing up.");
 	return 0;
 }

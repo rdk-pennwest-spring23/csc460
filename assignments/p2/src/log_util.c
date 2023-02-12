@@ -1,11 +1,13 @@
 /**
  * @file log_util.c
+ * 
+ * CSC 460 Language Translations
+ * Group 2
  * @author Robert Krency (kre1188@pennwest.edu)
  * @author Cody Long (lon1150@pennwest.edu)
  * @author Noelle Nieves (nie9236@pennwest.edu)
- * @class CSC 460 Language Translations
- * @brief Logging utilities.
  * 
+ * @brief Program 2: Scanner
  */
 
 #include "log_util.h"
