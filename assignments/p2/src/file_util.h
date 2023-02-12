@@ -24,6 +24,11 @@
 /* File Pointers */
 FILE *inputFilePtr, *outputFilePtr, *listingFilePtr, *tempFilePtr;
 
+char inputFileName[MAX_FILE_NAME_SIZE];
+char outputFileName[MAX_FILE_NAME_SIZE];
+char listingsFileName[MAX_FILE_NAME_SIZE];
+char tempFileName[MAX_FILE_NAME_SIZE];
+
 /**
  * @brief Opens all relevant files for 
  * 

@@ -30,10 +30,6 @@
 int open_files(int argc, char *argv[])
 {
 	int status = SUCCESS;
-	char inputFileName[MAX_FILE_NAME_SIZE];
-	char outputFileName[MAX_FILE_NAME_SIZE];
-	char listingsFileName[MAX_FILE_NAME_SIZE];
-	char tempFileName[MAX_FILE_NAME_SIZE];
 
 	// Check for input file name from command line args
 	if (argc > 1)
@@ -104,7 +100,7 @@ int open_files(int argc, char *argv[])
 				   "\t2) Backup the output file.\n"
 				   "\t3) Enter a new output file name.\n"
 				   "\t4) Quit.\n>> ");
-			char *choice;
+			char choice[50];
 			scanf("%s", choice);
 
 			switch(choice[0])
@@ -181,7 +177,7 @@ int open_files(int argc, char *argv[])
 
 
 /**
- * @brief Closes any remaining open files.
+ * @brief Closes any remaining open files, deletes the temporary file.
  * 
  * @return int Success/Failure
  */
@@ -196,6 +192,9 @@ int close_files()
 	if (tempFilePtr != NULL)
 		fclose(tempFilePtr);
 
+	// Delete the temporary file.
+	// delete_file(tempFileName);
+
 	return SUCCESS;
 }
 
@@ -206,12 +205,12 @@ int close_files()
  * @param listFilePtr 
  * @return int Success/Failure
  */
-int generate_listings_file(char* listingsFileName)
+int generate_listings_file(char* lisFileName)
 {
-	if ( file_exists(listingsFileName) )
+	if ( file_exists(lisFileName) )
 	{
-		backup_file(listingsFileName);
-		delete_file(listingsFileName);
+		backup_file(lisFileName);
+		delete_file(lisFileName);
 	}
 	return SUCCESS;
 }
