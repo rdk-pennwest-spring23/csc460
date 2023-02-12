@@ -288,12 +288,12 @@ int delete_file(char* fileName)
 	
 	if (remove(fileName) == 0)
 	{
-		log_info("Deleted file '%s' successfully", fileName);
+		log_info("Deleted file '%s' successfully.", fileName);
 		status = SUCCESS;
 	}
 	else
 	{
-		log_error("Unable to delete file '%s'", fileName);
+		log_error("Unable to delete file '%s' successfully.", fileName);
 		status = FAILURE;
 	}
 
