@@ -194,6 +194,7 @@ int close_files()
  */
 int generate_listings_file(char* genericFileName)
 {
+	log_info("Creating listings file.");
 	strcpy(listingsFileName, genericFileName);
 	strcat(listingsFileName, ".lis");
 	if ( file_exists(listingsFileName) )
@@ -213,6 +214,7 @@ int generate_listings_file(char* genericFileName)
  */
 int generate_temporary_file(char* genericFileName)
 {
+	log_info("Creating temporary file.");
 	time_t now;
 	time(&now);
 	char *date = ctime(&now);
@@ -237,6 +239,8 @@ int generate_temporary_file(char* genericFileName)
  */
 int backup_file(char* fileName)
 {
+	log_info("Creating backup file for '%s' file.", fileName);
+
 	// Create the name of the backup file
 	char backupFileName[MAX_FILE_NAME_SIZE];
 	time_t now;
