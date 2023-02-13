@@ -102,6 +102,7 @@ int open_files(int argc, char *argv[])
 				   "\t4) Quit.\n>> ");
 			char choice[50];
 			scanf("%s", choice);
+			printf("\n");
 
 			switch(choice[0])
 			{
@@ -145,24 +146,10 @@ int open_files(int argc, char *argv[])
 		strncpy(genericFileName, outputFileName, strlen(outputFileName)-4);
 
 		// Generate the listing file
-		strcpy(listingsFileName, genericFileName);
-		strcat(listingsFileName, ".lis");
-		generate_listings_file(listingsFileName);
+		generate_listings_file(genericFileName);
 
 		// Generate the temporary file
-		time_t now;
-		time(&now);
-		char *date = ctime(&now);
-		date[strlen(date)-1] = '\0';
-		int i;
-		for ( i = 0; date[i]; i++)
-			if (date[i] == ':')
-				date[i] = '-';
-		strcpy(tempFileName, genericFileName);
-		strcat(tempFileName, "-");
-		strcat(tempFileName, date);
-		strcat(tempFileName, ".tmp");
-		generate_temporary_file(tempFileName);
+		generate_temporary_file(genericFileName);
 
 		// Open the files
 		inputFilePtr = fopen(inputFileName, "r");
@@ -205,12 +192,14 @@ int close_files()
  * @param listFilePtr 
  * @return int Success/Failure
  */
-int generate_listings_file(char* lisFileName)
+int generate_listings_file(char* genericFileName)
 {
-	if ( file_exists(lisFileName) )
+	strcpy(listingsFileName, genericFileName);
+	strcat(listingsFileName, ".lis");
+	if ( file_exists(listingsFileName) )
 	{
-		backup_file(lisFileName);
-		delete_file(lisFileName);
+		backup_file(listingsFileName);
+		delete_file(listingsFileName);
 	}
 	return SUCCESS;
 }
@@ -224,6 +213,18 @@ int generate_listings_file(char* lisFileName)
  */
 int generate_temporary_file(char* genericFileName)
 {
+	time_t now;
+	time(&now);
+	char *date = ctime(&now);
+	date[strlen(date)-1] = '\0';
+	int i;
+	for ( i = 0; date[i]; i++)
+		if (date[i] == ':')
+			date[i] = '-';
+	strcpy(tempFileName, genericFileName);
+	strcat(tempFileName, "-");
+	strcat(tempFileName, date);
+	strcat(tempFileName, ".tmp");
 	return SUCCESS;
 }
 
