@@ -11,6 +11,7 @@
  */
 
 #include "file_util.h"
+#include "scanner.h"
 #include "log_util.h"
 
 #include <stdio.h>
@@ -180,7 +181,7 @@ int close_files()
 		fclose(tempFilePtr);
 
 	// Delete the temporary file.
-	// delete_file(tempFileName);
+	delete_file(tempFileName);
 
 	return SUCCESS;
 }

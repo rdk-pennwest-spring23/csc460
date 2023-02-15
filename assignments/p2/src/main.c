@@ -11,6 +11,7 @@
  */
 
 #include "file_util.h"
+#include "scanner.h"
 #include "log_util.h"
 
 #include <stdlib.h>
@@ -23,13 +24,15 @@ int main(int argc, char *argv[])
 {
 	int status = 0;
 	
-	// Open Files
+	// // Open Files
 	if (status = open_files(argc, argv))
 		log_info("Successfully opened files.");
 	else
 		log_error("Unable to successfully open files.");
 
 	// Run the Scanner
+	init_scanner();
+	run_scanner();
 
 	// Clean up.
 	if (status = close_files())
