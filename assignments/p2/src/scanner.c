@@ -92,15 +92,6 @@ int init_scanner()
     for (i = '0'; i <= '9'; i++)
         minusState->transition_table[i] = intState;
 
-    // for (i = 'A'; i <= 'Z'; i++)
-    // {
-    //     if (startState->transition_table[i] == startState)
-    //     {
-    //         startState->transition_table[i] = idState;    // Upper case alphas
-    //         startState->transition_table[i+32] = idState; // Lower case alphas
-    //     }
-    // }
-
     return 1;
 }
 
@@ -176,7 +167,7 @@ void add_alpha_transition(struct state *curState, char *str, struct token target
     char curChar = str[0];
 
     // If this is the last state
-    if (str[1] == '\0')
+    if (curChar == '\0')
     {
         curState->token = target;
     }
