@@ -92,14 +92,14 @@ int init_scanner()
     for (i = '0'; i <= '9'; i++)
         minusState->transition_table[i] = intState;
 
-    for (i = 'A'; i <= 'Z'; i++)
-    {
-        if (startState->transition_table[i] == startState)
-        {
-            startState->transition_table[i] = idState;    // Upper case alphas
-            startState->transition_table[i+32] = idState; // Lower case alphas
-        }
-    }
+    // for (i = 'A'; i <= 'Z'; i++)
+    // {
+    //     if (startState->transition_table[i] == startState)
+    //     {
+    //         startState->transition_table[i] = idState;    // Upper case alphas
+    //         startState->transition_table[i+32] = idState; // Lower case alphas
+    //     }
+    // }
 
     return 1;
 }
@@ -115,6 +115,9 @@ int run_scanner()
 
     while (curChar != EOF)
     {
+        // Upper case the chars
+        if (curChar >= 97)
+            curChar ^= 0x20;
         if ( curState->transition_table[curChar] == startState )
         {
             // End of Token
@@ -138,13 +141,13 @@ int run_scanner()
         else {
             curState = curState->transition_table[curChar];
             strncat(buffer, &curChar, 1);
-            struct token token = curState->token;
-            log_info(FMT_TOKEN_LINE, 0, token.id, token.name, buffer);
-            for (int i = 0; i < 128; i++)
-            {
-                printf("%d ", startState->transition_table[i]->id);
-            }
-            printf("\n");
+            // struct token token = curState->token;
+            // log_info(FMT_TOKEN_LINE, 0, token.id, token.name, buffer);
+            // for (int i = 0; i < 128; i++)
+            // {
+            //     printf("%d ", startState->transition_table[i]->id);
+            // }
+            // printf("\n");
             curChar = fgetc(inputFilePtr);
         }
     }
@@ -181,7 +184,7 @@ void add_alpha_transition(struct state *curState, char *str, struct token target
     if (str[0] != '\0')
     {
         struct state *nextState;
-        if (curState->transition_table[curChar]->id == 0)
+        if (curState->transition_table[curChar] == startState || curState->transition_table[curChar] == idState)
         {
             nextState = create_new_transition(nextState, errorToken);
             curState->transition_table[curChar] = nextState;
