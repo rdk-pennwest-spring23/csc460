@@ -85,6 +85,7 @@ int init_scanner()
     add_symbol_transition(startState, "=", (struct token){30, "EQUALOP"});
     add_symbol_transition(startState, "<>", (struct token){31, "NOTEQUALOP"});
     add_symbol_transition(startState, "--", (struct token){32, "COMMENT"});
+    
 
     // Handle Negative Numbers
     log_debug("Handling negative numbers transitions.");
@@ -98,53 +99,97 @@ int init_scanner()
 
 int run_scanner()
 {
-    char curChar, buffer[1000];
+    int lineCount = 1, errorCount = 0, hasNewLine = 1, lineSize = 0;
+    char curChar, buffer[1000], line[1000];
     memset(buffer, 0, 1000);
+    memset(line, 0, 1000);
     struct state *curState = startState;
-
     curChar = fgetc(inputFilePtr);
 
-    while (curChar != EOF)
+    do
     {
+        // Print the current line to the file, then reset
+        if (hasNewLine)
+        {
+            hasNewLine = 0;
+            fseek(inputFilePtr, -1, SEEK_CUR);
+            fgets(line, 1000, inputFilePtr);
+            write_to_file(listingFilePtr, "[%d] %s", lineCount, line);
+            fseek(inputFilePtr, -strlen(line), SEEK_CUR);
+            memset(line, 0, 1000);
+            curChar = fgetc(inputFilePtr);
+        }
+
         // Upper case the chars
-        if (curChar >= 97)
+        if (curChar >= 'a' && curChar <= 'z')
             curChar ^= 0x20;
+
+        // If the next state is the start state, we are at the end of a token
         if ( curState->transition_table[curChar] == startState )
         {
             // End of Token
             struct token token = curState->token;
-            log_info(FMT_TOKEN_LINE, 0, token.id, token.name, buffer);
-            curState = startState;
-            memset(buffer, 0, 1000);
+            if (curState->id == startState->id)
+            {
+                strncat(buffer, &curChar, 1);
+                errorCount++;
+                curChar = fgetc(inputFilePtr);
 
-            // If token is a comment, go to next line
+                write_to_file(listingFilePtr, "Error: `%s` not recognized.", buffer );
+            }
+
+            // If token is a comment, go to next line, and don't write out the token info
             if (token.id == 32)
             {
                 while(curChar != 10)
                     curChar = fgetc(inputFilePtr);
             }
+            else // Otherwise, write out the token info and proceed
+            {
+                write_to_file(outputFilePtr, FMT_TOKEN_LINE, token.id, token.name, buffer);
+            }
+            
+            // Return to the start state
+            if (curState->id != startState->id)
+                strcat(line, " ");
+            curState = startState;
+
+            // Move the buffer to the line buffer, reset the buffer
+            strcat(line, buffer);
+            memset(buffer, 0, 1000);
             
             // Go past the whitespace
-            do{
+            while (curChar == ' ' || curChar == '\t')
+            {
                 curChar = fgetc(inputFilePtr);
-            } while (curChar == ' ' || curChar == '\t' || curChar == 10 || curChar == 13);
+            }
+
+            // Carriage Return char
+            if (curChar == 13)
+                curChar = fgetc(inputFilePtr);
+            
+            // Line feed char
+            if (curChar == 10)
+            {    
+                curChar = fgetc(inputFilePtr);
+                lineCount++;
+                hasNewLine++;
+                write_to_file(listingFilePtr, "\n\n");
+            }
         }
         else {
             curState = curState->transition_table[curChar];
             strncat(buffer, &curChar, 1);
-            // struct token token = curState->token;
-            // log_info(FMT_TOKEN_LINE, 0, token.id, token.name, buffer);
-            // for (int i = 0; i < 128; i++)
-            // {
-            //     printf("%d ", startState->transition_table[i]->id);
-            // }
-            // printf("\n");
             curChar = fgetc(inputFilePtr);
         }
-    }
+    } while (curChar != EOF);
 
     struct token token = curState->token;
-    log_info(FMT_TOKEN_LINE, 0, token.id, token.name, buffer);
+    write_to_file(outputFilePtr, FMT_TOKEN_LINE, token.id, token.name, buffer);
+    write_to_file(outputFilePtr, FMT_TOKEN_LINE, -1, "SCANEOF", "EOF");
+    write_to_file(listingFilePtr, "\n\nLexical Errors: %d", errorCount);
+
+
 }
 
 

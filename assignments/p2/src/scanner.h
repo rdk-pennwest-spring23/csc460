@@ -14,7 +14,7 @@
 #define SCANNER_H
 
 #define FMT_LINE_FEED "[%d] %s"
-#define FMT_TOKEN_LINE "[%d] Token ID: %3d \t Token Type: %15s \t Actual Token: %s"
+#define FMT_TOKEN_LINE "Token ID: %3d \t Token Type: %15s \t Actual Token: %s"
 
 struct token {
     int id;

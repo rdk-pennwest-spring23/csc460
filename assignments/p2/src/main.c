@@ -31,8 +31,10 @@ int main(int argc, char *argv[])
 		log_error("Unable to successfully open files.");
 
 	// Run the Scanner
-	init_scanner();
-	run_scanner();
+	if (status)
+		status = init_scanner();
+	if (status)
+		status = run_scanner();
 
 	// Clean up.
 	if (status = close_files())

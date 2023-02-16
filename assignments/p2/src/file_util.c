@@ -83,6 +83,7 @@ int open_files(int argc, char *argv[])
 
 	// Check for a valid output file
 	int validOutput = 0;
+	backup = 0;
 	while(status == SUCCESS && !validOutput)
 	{
 		// Check if the ouput file has an extension
@@ -114,6 +115,7 @@ int open_files(int argc, char *argv[])
 
 				case '2': // Backup
 					log_info("User chose to backup the output file.");
+					backup = 1;
 					backup_file(outputFileName);
 					delete_file(outputFileName);
 					break;
@@ -198,11 +200,9 @@ int generate_listings_file(char* genericFileName)
 	log_info("Creating listings file.");
 	strcpy(listingsFileName, genericFileName);
 	strcat(listingsFileName, ".lis");
-	if ( file_exists(listingsFileName) )
-	{
+	if ( file_exists(listingsFileName) && backup)
 		backup_file(listingsFileName);
-		delete_file(listingsFileName);
-	}
+	delete_file(listingsFileName);
 	return SUCCESS;
 }
 
@@ -320,6 +320,7 @@ int write_to_file(FILE* file, const char* fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	vfprintf(file, fmt, args);
+	fprintf(file, "\n");
 	va_end(args);
 
 	return SUCCESS;

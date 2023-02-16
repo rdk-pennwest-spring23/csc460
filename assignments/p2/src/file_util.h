@@ -29,6 +29,8 @@ char outputFileName[MAX_FILE_NAME_SIZE];
 char listingsFileName[MAX_FILE_NAME_SIZE];
 char tempFileName[MAX_FILE_NAME_SIZE];
 
+int backup;
+
 /**
  * @brief Opens all relevant files for 
  * 
