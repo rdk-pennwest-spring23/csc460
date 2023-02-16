@@ -129,14 +129,18 @@ int run_scanner()
         {
             // End of Token
             struct token token = curState->token;
-            if (curState->id == startState->id)
+
+            // If we have an error state
+            if (curState->id == startState->id) 
             {
-                strncat(buffer, &curChar, 1);
+                if (curState->id != startState->transition_table[':']->id)
+                    strncat(buffer, &curChar, 1);
                 errorCount++;
                 curChar = fgetc(inputFilePtr);
-
-                write_to_file(listingFilePtr, "Error: `%s` not recognized.", buffer );
             }
+
+            if (curState->token.id == errorToken.id)
+                write_to_file(listingFilePtr, "Error: `%s` not recognized.", buffer );
 
             // If token is a comment, go to next line, and don't write out the token info
             if (token.id == 32)
@@ -184,8 +188,11 @@ int run_scanner()
         }
     } while (curChar != EOF);
 
-    struct token token = curState->token;
-    write_to_file(outputFilePtr, FMT_TOKEN_LINE, token.id, token.name, buffer);
+    if (curState->id != startState->id)
+    {
+        struct token token = curState->token;
+        write_to_file(outputFilePtr, FMT_TOKEN_LINE, token.id, token.name, buffer);
+    }
     write_to_file(outputFilePtr, FMT_TOKEN_LINE, -1, "SCANEOF", "EOF");
     write_to_file(listingFilePtr, "\n\nLexical Errors: %d", errorCount);
 
@@ -258,7 +265,7 @@ void add_symbol_transition(struct state *curState, char *str, struct token targe
     else
     {
         struct state *nextState;
-        if (curState->transition_table[curChar]->id == 0)
+        if (curState->transition_table[curChar]->id == startState->id)
         {
             nextState = create_new_transition(nextState, errorToken);
             curState->transition_table[curChar] = nextState;
