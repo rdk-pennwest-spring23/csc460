@@ -1,0 +1,116 @@
+\documentclass[12pt]{article}
+
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usetikzlibrary{automata}
+\usepackage{qtree}
+\usepackage{enumitem}
+\usepackage{amsmath}
+
+\date{\today}
+\author{Noelle Nieves \\ Robert Krency \\ Cody Long }
+\title{Assignment 1}
+
+% Geometry 
+\usepackage[margin=1in]{geometry}
+
+% Fancy Header
+\usepackage{fancyhdr, lastpage}
+\fancypagestyle{plain}{
+  \fancyhf{}    % Clear header/footer
+  \fancyhead[L]{CSC 460 - Language Translations}
+  \fancyhead[R]{S23}
+  \fancyfoot[C]{\thepage\ of \pageref{LastPage}}
+}
+\pagestyle{plain}
+
+% Add vertical spacing to tables
+\renewcommand{\arraystretch}{1.4}
+
+% Document
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\section*{Q3}
+    
+\begin{tabular}{| c | l | l | l |}
+    \hline
+    \textbf{Rule} & \textbf{Nonterminal} & \textbf{First} & \textbf{Follow} \\ \hline
+    1 & Expr & \{-, (, id\} & \{\$, )\} \\ \hline
+    2 & ExprTail & \{-, $\lambda$\} & \{\$, )\} \\ \hline
+    3 & Var & \{id\} & \{-, $\lambda$\} \\ \hline
+    4 & VarTail & \{(, $\lambda$\} & \{-,$\lambda$\} \\ \hline
+\end{tabular}
+\vspace{1cm}
+
+\noindent \begin{tabular}{|l|l|l|l|l|l|}
+    \hline
+    \textbf{Nonterminal} & \textbf{-}\hspace{5mm} & \textbf{(}\hspace{5mm} & \textbf{)}\hspace{5mm} & \textbf{id}\hspace{5mm} & \textbf{\$}\hspace{5mm} \\ \hline
+    Expr & 1 & 1 & 1 & 1 & 1 \\ \hline
+    ExprTail & 2 & & 2 & & 1 \\ \hline
+    Var & 3 & & & 3 & \\ \hline
+    VarTail & 4 & 4 & & & \\ \hline
+\end{tabular}
+
+\pagebreak
+\section*{Q4: Trace of ``id - - id ((id))''}
+
+\begin{tabular}{ c  l  r }
+    \textbf{Rule} & \textbf{Stack} & \textbf{Input} \\ \hline
+     & Expr & id - - id ((id)) \$ \\ \hline
+     1 & ExprTail Var & id - - id ((id)) \$ \\ \hline
+     3 & ExprTail VarTail id & id - - id ((id)) \$ \\ \hline
+     & ExprTail VarTail & - - id ((id)) \$ \\ \hline
+     4 & ExprTail & - - id ((id)) \$ \\ \hline
+     2 & Expr - & - - id ((id)) \$ \\ \hline
+     & Expr & - id ((id)) \$ \\ \hline
+     1 & Expr - & - id ((id)) \$ \\ \hline
+     & Expr & id ((id)) \$ \\ \hline
+     1 & ExprTail Var & id ((id)) \$ \\ \hline
+     3 & ExprTail VarTail id & id ((id)) \$ \\ \hline
+     & ExprTail VarTail & ((id)) \$ \\ \hline
+     4 & ExprTail ) Expr ( & ((id)) \$ \\ \hline
+     1 & ExprTail ) Expr & (id)) \$ \\ \hline
+     1 & ExprTail ) ) Expr ( & (id)) \$ \\ \hline
+     & ExprTail ) ) Expr & id)) \$ \\ \hline
+     1 & ExprTail ) ) ExprTail Var & id)) \$ \\ \hline
+     3 & ExprTail ) ) ExprTail VarTail id & id)) \$ \\ \hline
+     & ExprTail ) ) ExprTail VarTail & )) \$ \\ \hline
+     4 & ExprTail ) ) ExprTail & ) ) \$ \\ \hline
+     2 & ExprTail ) ) & ) ) \$ \\ \hline
+     & ExprTail ) & ) \$ \\ \hline
+     & ExprTail & \$ \\ \hline
+     2 & & \$
+\end{tabular}
+
+\pagebreak
+\Tree [.Expr 
+        [.Var id 
+            [.VarTail $\lambda$ ]
+        ] 
+        [.ExprTail - 
+            [.Expr - 
+                [.Expr 
+                    [.Var id 
+                        [.VarTail $($ 
+                            [.Expr $($ 
+                                [.Expr 
+                                    [.Var id 
+                                        [.VarTail $\lambda$ ] 
+                                    ] 
+                                    [.ExprTail $\lambda$ ] 
+                                ] $)$ 
+                            ] $)$ 
+                        ]
+                    ] 
+                    [.ExprTail $\lambda$ ]
+                ] 
+            ] 
+        ] 
+    ]
+
+
+\end{document}
