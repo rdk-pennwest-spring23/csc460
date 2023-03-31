@@ -14,10 +14,10 @@
 #define SCANNER_H
 
 
-#define FMT_LINE_FEED "[%d] %s"
+#define FMT_LINE_FEED "[%d] %s\n"
 #define FMT_TOKEN_LINE "Token ID: %3d \t Token Type: %15s \t Actual Token: %s"
 
-int numLines;
+int lineNumber;
 
 struct token {
     int id;
@@ -57,6 +57,8 @@ struct token get_next_token();
 struct token peek_next_token();
 
 struct token read_token();
+
+void print_line_to_listings();
 
 #endif
 

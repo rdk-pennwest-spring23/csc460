@@ -13,4 +13,23 @@
 
 int run_parser();
 
+int parse_systemGoal();
+int parse_program();
+int parse_statementList();
+int parse_statement();
+int parse_ifTail();
+int parse_idList();
+int parse_exprList();
+int parse_expression();
+int parse_term();
+int parse_factor();
+int parse_addOp();
+int parse_multOp();
+int parse_condition();
+int parse_addition();
+int parse_multiplication();
+int parse_unary();
+int parse_lPrimary();
+int parse_relOp();
+
 #endif

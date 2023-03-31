@@ -23,7 +23,7 @@ int init_scanner()
     log_info("Initializing scanner.");
     int i;
 
-    numLines = 0;
+    lineNumber = 1;
 
     // Set up the special tokens
     log_debug("Initializing special tokens.");
@@ -49,6 +49,7 @@ int init_scanner()
     intState = create_new_transition(intState, intToken);
     for (i = '0'; i <= '9'; i++)
         intState->transition_table[i] = intState;
+
 
     // Add the string tokens
     log_debug("Adding alpha transitions.");
@@ -97,115 +98,10 @@ int init_scanner()
     struct state *minusState = startState->transition_table['-'];
     for (i = '0'; i <= '9'; i++)
         minusState->transition_table[i] = intState;
-
+ 
     return 1;
 }
 
-
-int run_scanner()
-{
-    int lineCount = 1, errorCount = 0, hasNewLine = 1, lineSize = 0;
-    char curChar, buffer[1000], line[1000];
-    memset(buffer, 0, 1000);
-    memset(line, 0, 1000);
-    struct state *curState = startState;
-    curChar = fgetc(inputFilePtr);
-
-    do
-    {
-        // Print the current line to the file, then reset file pointer
-        if (hasNewLine)
-        {
-            hasNewLine = 0;
-            fseek(inputFilePtr, -1, SEEK_CUR);
-            fgets(line, 1000, inputFilePtr);
-            write_to_file(listingFilePtr, FMT_LINE_FEED, lineCount, line);
-            fseek(inputFilePtr, -strlen(line), SEEK_CUR);
-            memset(line, 0, 1000);
-            curChar = fgetc(inputFilePtr);
-
-            // Skip whitespace to start a line
-            while (curChar == ' ' || curChar == '\t')
-                curChar = fgetc(inputFilePtr);
-        }
-
-        // Upper case the chars
-        if (curChar >= 'a' && curChar <= 'z')
-            curChar ^= 0x20;
-
-        // If the next state is the start state, we are at the end of a token
-        if ( curState->transition_table[curChar] == startState )
-        {
-            // End of Token
-            struct token token = curState->token;
-
-            // If we have an error state
-            if (curState->id == startState->id) 
-            {
-                if (curState->id != startState->transition_table[':']->id)
-                    strncat(buffer, &curChar, 1);
-                errorCount++;
-                curChar = fgetc(inputFilePtr);
-            }
-
-            if (curState->token.id == errorToken.id)
-                write_to_file(listingFilePtr, "Error: `%s` not recognized.", buffer );
-
-            // If token is a comment, go to next line, and don't write out the token info
-            if (token.id == 32)
-            {
-                while(curChar != 10)
-                    curChar = fgetc(inputFilePtr);
-            }
-            else // Otherwise, write out the token info and proceed
-            {
-                write_to_file(outputFilePtr, FMT_TOKEN_LINE, token.id, token.name, buffer);
-            }
-            
-            // Return to the start state
-            if (curState->id != startState->id)
-                strcat(line, " ");
-            curState = startState;
-
-            // Move the buffer to the line buffer, reset the buffer
-            strcat(line, buffer);
-            memset(buffer, 0, 1000);
-            
-            // Go past the whitespace
-            while (curChar == ' ' || curChar == '\t')
-            {
-                curChar = fgetc(inputFilePtr);
-            }
-
-            // Carriage Return char
-            if (curChar == 13)
-                curChar = fgetc(inputFilePtr);
-            
-            // Line feed char
-            if (curChar == 10)
-            {    
-                curChar = fgetc(inputFilePtr);
-                lineCount++;
-                hasNewLine++;
-                write_to_file(listingFilePtr, "\n\n");
-            }
-        }
-        else {
-            curState = curState->transition_table[curChar];
-            strncat(buffer, &curChar, 1);
-            curChar = fgetc(inputFilePtr);
-        }
-    } while (curChar != EOF);
-
-    if (curState->id != startState->id)
-    {
-        struct token token = curState->token;
-        write_to_file(outputFilePtr, FMT_TOKEN_LINE, token.id, token.name, buffer);
-    }
-    write_to_file(outputFilePtr, FMT_TOKEN_LINE, scaneofToken.id, scaneofToken.name, "EOF");
-    write_to_file(listingFilePtr, "\n\nLexical Errors: %d", errorCount);
-    return 1;
-}
 
 struct token peek_next_token()
 {
@@ -213,7 +109,12 @@ struct token peek_next_token()
     long filePos = ftell(inputFilePtr);
 
     // Get the next token
-    struct token returnToken = get_next_token();
+    struct token returnToken;
+
+    // Make sure we don't use a newline token
+    do {
+        returnToken = get_next_token();
+    } while (returnToken.id == newlineToken.id);
 
     // Reset the file pointer to the previous position
     fseek(inputFilePtr, filePos, SEEK_SET);
@@ -224,7 +125,7 @@ struct token peek_next_token()
 
 struct token get_next_token()
 {
-    char curChar, buffer[1000];
+    char curChar;
     int foundToken = 0;
     struct state *curState = startState;
     struct token returnToken;
@@ -235,15 +136,12 @@ struct token get_next_token()
     while (curChar == ' ' || curChar == '\t')
         curChar = fgetc(inputFilePtr);
 
-    // Check for new line
+    // Check for new Line
     if (curChar == 13)
     {
-        // Read one more character for the new line
-        fgetc(inputFilePtr);
-
-        // Return the newline token
         foundToken = 1;
         returnToken = newlineToken;
+        fgetc(inputFilePtr);
     }
 
     // If we're at the end of the file, return the SCANEOF Token
@@ -262,7 +160,13 @@ struct token get_next_token()
         write_to_file(tempFilePtr," Current char: %i", curChar);
 
         // Check if the transition is to a valid state
-        if ( curState->transition_table[curChar]->id != startState->id )
+        if (curChar == EOF)
+        {
+            // We found our token
+            foundToken = 1;
+            returnToken = curState->token;
+        }
+        else if ( curState->transition_table[curChar]->id != startState->id )
         {
             curState = curState->transition_table[curChar];
             curChar = fgetc(inputFilePtr);
@@ -291,24 +195,10 @@ struct token read_token()
     // Get the next token
     returnToken = get_next_token();
 
-    // Check if it's a new line token
+    // Check for new lines
     while (returnToken.id == newlineToken.id)
     {
-        log_debug("New line...");
-        
-        // // Write out to listing file the line number and line
-        // long filePos = ftell(inputFilePtr);
-        // char line[1000], curChar, temp[2];
-        // temp[1] = '\0';
-        // int len = 1000;
-        // while ((curChar = fgetc(inputFilePtr)) != 13)
-        // {
-        //     temp[0] = curChar;
-        //     strcat(line, temp);
-        // }
-        // fprintf("%s", line);
-        // write_to_file(listingFilePtr, FMT_LINE_FEED, numLines, line);
-        // fseek(inputFilePtr, filePos, SEEK_SET);
+        print_line_to_listings();
 
         // Get the next token
         returnToken = get_next_token();
@@ -403,6 +293,27 @@ struct token create_token(int id, char* name)
     newToken.name = name;
     tokenList[id] = newToken;
     return newToken;
+}
+
+void print_line_to_listings()
+{
+    char buffer[1000], c;
+    int pos = 0;
+    long startPos = ftell(inputFilePtr);
+
+    // 
+    c = fgetc(inputFilePtr);
+    while (c != 13 && c != EOF)
+    {
+        buffer[pos] = c;
+        pos++;
+        c = fgetc(inputFilePtr);
+    }
+    buffer[pos] = 0;
+    write_to_file(listingFilePtr, FMT_LINE_FEED, lineNumber++, buffer);
+
+    // Return the file to the previous position
+    fseek(inputFilePtr, startPos, SEEK_SET);
 }
 
 // EOF
