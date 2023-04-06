@@ -19,17 +19,6 @@ int run_parser()
 
     parse_systemGoal();
 
-    // curToken = read_token();
-
-    // while( curToken.id != scaneofToken.id)
-    // {
-    //     log_info("Token: %s", curToken.name);
-    //     write_to_file(outputFilePtr, FMT_TOKEN_LINE, curToken.id, curToken.name, "TOKEN");
-    //     curToken = read_token();
-    // }
-        
-    // write_to_file(outputFilePtr, FMT_TOKEN_LINE, curToken.id, curToken.name, "TOKEN");
-
     return 1;
 }
 
@@ -40,6 +29,7 @@ int match(struct token t1, struct token t2)
 
 int parse_systemGoal()
 {
+    log_debug("Parsing system goal.");
     parse_program();
     
     // Check for EOF
@@ -56,6 +46,7 @@ int parse_systemGoal()
 
 int parse_program()
 {
+    log_debug("Parsing program.");
     struct token beginToken = tokenList[TOKEN_ID_BEGIN];
     struct token endToken = tokenList[TOKEN_ID_END];
 
@@ -84,6 +75,7 @@ int parse_program()
 
 int parse_statementList()
 {
+    log_debug("Parsing statement list.");
     if (parse_statement())
         parse_statementList();
 
@@ -97,12 +89,15 @@ int parse_statementList()
  */
 int parse_statement()
 {
+    log_debug("Parsing statement.");
     int status = 1;
     struct token inToken;
     struct token idToken = tokenList[TOKEN_ID_ID];
     struct token assignopToken = tokenList[TOKEN_ID_ASSIGNOP];
     struct token readToken = tokenList[TOKEN_ID_READ];
     struct token writeToken = tokenList[TOKEN_ID_WRITE];
+    struct token ifToken = tokenList[TOKEN_ID_IF];
+    struct token thenToken = tokenList[TOKEN_ID_THEN];
     struct token leftparenToken = tokenList[TOKEN_ID_LPAREN];
     struct token rightparenToken = tokenList[TOKEN_ID_RPAREN];
     struct token semiToken = tokenList[TOKEN_ID_SEMICOLON];
@@ -184,14 +179,37 @@ int parse_statement()
         
     }
 
-    // Case 4:
-    // IF
-    // (
-    // parse_condition();
-    // )
-    // THEN
-    // parse_statementList();
-    // parse_ifTail();
+    // IF ( <condition> ) THEN <stmt list> <if tail>
+    else if (match(peek_next_token(), ifToken))
+    {
+        // IF
+        read_token();
+
+        // (
+        inToken = read_token();
+        if (!match(leftparenToken, inToken))
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, leftparenToken.name, inToken.name);
+
+        // <condition>
+        parse_condition();
+
+        // )
+        inToken = read_token();
+        if (!match(rightparenToken, inToken))
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
+
+        // THEN
+        inToken = read_token();
+        if (!match(thenToken, inToken))
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, thenToken.name, inToken.name);
+
+        // <stmt list>
+        parse_statementList();
+
+        // <if tail>
+        parse_ifTail();
+
+    }
 
     else {
         status = 0;
@@ -200,16 +218,36 @@ int parse_statement()
     return status;
 }
 
+/**
+ * @brief Parses an if tail.
+ * 
+ * IFTAIL   -> ELSE <stmt list> ENDIF
+ *          -> ENDIF
+ * 
+ * @return int 
+ */
 int parse_ifTail()
 {
     log_debug("Parsing If Tail.");
-    //Case 1: 
-    //ELSE 
-    parse_statementList(); 
-    //ENDIF
     
-    //Case 2:
-    //ENDIF
+    int status = 1;
+    struct token inToken;
+    struct token elseToken = tokenList[TOKEN_ID_ELSE];
+    struct token endifToken = tokenList[TOKEN_ID_ENDIF];
+
+    // ELSE <stmt list>
+    if (match(peek_next_token(), elseToken))
+    {
+        // ELSE
+        read_token();
+        
+        // <stmt list>
+        parse_statementList();
+    }
+
+    inToken = read_token();
+    if (!match(endifToken, inToken))
+        write_to_file(listingFilePtr, FMT_PARSE_ERROR, endifToken.name, inToken.name);
 
 }
 
@@ -404,42 +442,121 @@ int parse_multOp()
     // /
 }
 
+
+/**
+ * @brief Parses a condition.
+ * 
+ * CONDITION    -> <addition> {<rel op> <addition>}
+ * 
+ * @return int 
+ */
 int parse_condition()
 {
+    log_debug("Parsing condition.");
+    int status = 1;
+
+    // <addition>
     parse_addition();
 
-    //optional:
-    parse_relOp();
-    parse_addition();
+    // <relop>
+    if (status = parse_relOp())
+    {
+        // <addition>
+        parse_addition();
+    }
+
+    return status;
 }
 
+/**
+ * @brief Parses an addition clause.
+ * 
+ * ADDDITION -> <multiplication> {<add op> <mulitiplication>}
+ * 
+ * @return int 
+ */
 int parse_addition()
 {
-    parse_multiplication();
+    int status = 1;
+    // <multiplication>
+    status = parse_multiplication();
 
-    // (optional)   parse_addOp();
-    //              parse_multiplication();
+    // <addOp>
+    if (parse_addOp())
+    {
+        // <multiplication>
+        parse_multiplication();
+    }
+
+    return 1;
 }
 
+/**
+ * @brief Parses a multiplication clause
+ * 
+ * MULTIPLICATION -> <unary> {<multop> <unary>}
+ * 
+ * @return int 
+ */
 int parse_multiplication()
 {
-    parse_unary();
+    int status = 1;
 
-    // (optional)   parse_multOp();
-    //              parse_unary();
+    // <unary>
+    status = parse_unary();
+
+    // <multOp>
+    if (parse_multOp())
+    {
+        // <unary>
+        parse_unary();
+    }
 }
 
 int parse_unary()
 {
-    //Case 1:
-    //! 
-    parse_unary();
+    int status = 1;
+    struct token inToken;
+    struct token notToken = tokenList[TOKEN_ID_NOTOP];
+    struct token minusOp = tokenList[TOKEN_ID_MINUSOP];
+
+    // ! <unary>
+    if (match(peek_next_token(), notToken))
+    {
+        // !
+        read_token();
+
+        // <unary>
+        parse_unary();
+    }
+
+    // - <unary>
+    else if (match(peek_next_token(), minusOp))
+    {
+        // -
+        read_token();
+
+        // <unary>
+        parse_unary();
+    }
+
+    // <lprimary>
+    else
+    {
+        status = parse_lPrimary();
+    }
     
-    //Case 2:
-    //-
-    parse_unary();
+    return status;
 }
 
+
+/**
+ * @brief Parses an lprimary clause.
+ * 
+ * lprimary -> INTLITERAL
+ * 
+ * @return int 
+ */
 int parse_lPrimary()
 {
     // Case 1:

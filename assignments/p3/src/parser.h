@@ -9,9 +9,13 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#define FMT_PARSE_ERROR "Parse Error. Expected Token: %10s \t Actual Token: %10s"
+
 #include "scanner.h"
 
 int run_parser();
+
+int match(struct token t1, struct token t2);
 
 int parse_systemGoal();
 int parse_program();

@@ -125,10 +125,11 @@ struct token peek_next_token()
 
 struct token get_next_token()
 {
-    char curChar;
+    char curChar, buffer[1000];
     int foundToken = 0;
     struct state *curState = startState;
     struct token returnToken;
+    memset(buffer, 0, 1000);
 
     curChar = fgetc(inputFilePtr);
 
@@ -137,11 +138,12 @@ struct token get_next_token()
         curChar = fgetc(inputFilePtr);
 
     // Check for new Line
-    if (curChar == 13)
+    if (curChar == 13 || curChar == 10)
     {
         foundToken = 1;
         returnToken = newlineToken;
-        fgetc(inputFilePtr);
+        while(curChar != 10)
+            curChar = fgetc(inputFilePtr);
     }
 
     // If we're at the end of the file, return the SCANEOF Token
@@ -153,6 +155,7 @@ struct token get_next_token()
     
     while(!foundToken)
     {
+        buffer[strlen(buffer)] = curChar;
         // Upper case if char is an alpha
         if (curChar >= 'a' && curChar <= 'z')
             curChar ^= 0x20;
@@ -175,12 +178,18 @@ struct token get_next_token()
         else 
         {
             // Rewind one character
-            fseek(inputFilePtr, -1, SEEK_CUR);
+            if (curState->token.id != errorToken.id)
+                fseek(inputFilePtr, -1, SEEK_CUR);
 
             // We found our token
             foundToken = 1;
             returnToken = curState->token;
         }
+    }
+
+    if (returnToken.id == errorToken.id)
+    {
+        write_to_file(listingFilePtr, FMT_TOKEN_LINE, returnToken.id, returnToken.name, buffer);
     }
 
     return returnToken;
@@ -198,11 +207,14 @@ struct token read_token()
     // Check for new lines
     while (returnToken.id == newlineToken.id)
     {
+        write_to_file(listingFilePtr, "");
         print_line_to_listings();
 
         // Get the next token
         returnToken = get_next_token();
     }
+
+    write_to_file(outputFilePtr, FMT_TOKEN_LINE, returnToken.id, returnToken.name, returnToken.name);
 
     return returnToken;
 }
@@ -238,6 +250,7 @@ void add_alpha_transition(struct state *curState, char *str, struct token target
         if (curState->transition_table[curChar] == startState || curState->transition_table[curChar] == idState)
         {
             nextState = create_new_transition(nextState, errorToken);
+            nextState->token = idToken;
             curState->transition_table[curChar] = nextState;
         }
         else
