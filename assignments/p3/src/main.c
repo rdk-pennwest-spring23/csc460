@@ -31,9 +31,11 @@ int main(int argc, char *argv[])
 	else
 		log_error("Unable to successfully open files.");
 
-	// Run the Scanner
+	// Init the Scanner
 	if (status)
 		status = init_scanner();
+
+	// Run the Parser
 	if (status)
 	{
 		status = run_parser();

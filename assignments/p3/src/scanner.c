@@ -13,6 +13,7 @@
 #include "scanner.h"
 #include "log_util.h"
 #include "file_util.h"
+#include "parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +25,7 @@ int init_scanner()
     int i;
 
     lineNumber = 1;
+    lexicalErrors = 0;
 
     // Set up the special tokens
     log_debug("Initializing special tokens.");
@@ -114,7 +116,7 @@ struct token peek_next_token()
     // Make sure we don't use a newline token
     do {
         returnToken = get_next_token();
-    } while (returnToken.id == newlineToken.id);
+    } while (returnToken.id == newlineToken.id || returnToken.id == tokenList[TOKEN_ID_COMMENT].id);
 
     // Reset the file pointer to the previous position
     fseek(inputFilePtr, filePos, SEEK_SET);
@@ -125,7 +127,7 @@ struct token peek_next_token()
 
 struct token get_next_token()
 {
-    char curChar, buffer[1000];
+    char curChar;
     int foundToken = 0;
     struct state *curState = startState;
     struct token returnToken;
@@ -155,7 +157,6 @@ struct token get_next_token()
     
     while(!foundToken)
     {
-        buffer[strlen(buffer)] = curChar;
         // Upper case if char is an alpha
         if (curChar >= 'a' && curChar <= 'z')
             curChar ^= 0x20;
@@ -172,6 +173,7 @@ struct token get_next_token()
         else if ( curState->transition_table[curChar]->id != startState->id )
         {
             curState = curState->transition_table[curChar];
+            buffer[strlen(buffer)] = curChar;
             curChar = fgetc(inputFilePtr);
         }
         // If the transition is to an invalid state
@@ -189,7 +191,16 @@ struct token get_next_token()
 
     if (returnToken.id == errorToken.id)
     {
+        lexicalErrors++;
         write_to_file(listingFilePtr, FMT_TOKEN_LINE, returnToken.id, returnToken.name, buffer);
+    }
+
+    if (returnToken.id == tokenList[TOKEN_ID_COMMENT].id)
+    {
+        while (curChar != 13)
+            curChar = fgetc(inputFilePtr);
+            
+        fseek(inputFilePtr, -1, SEEK_CUR);
     }
 
     return returnToken;
@@ -205,16 +216,22 @@ struct token read_token()
     returnToken = get_next_token();
 
     // Check for new lines
-    while (returnToken.id == newlineToken.id)
+    while (returnToken.id == newlineToken.id || returnToken.id == tokenList[TOKEN_ID_COMMENT].id)
     {
-        write_to_file(listingFilePtr, "");
-        print_line_to_listings();
+        if (returnToken.id == newlineToken.id)
+        {
+            write_to_file(listingFilePtr, "");
+            print_line_to_listings();
 
+            // Write out the Statement Buffer to the Output File
+            write_to_file(outputFilePtr, "\nStatement: %s\n", stmtBuffer);
+            memset(stmtBuffer, 0, 1000);
+        }
         // Get the next token
         returnToken = get_next_token();
     }
 
-    write_to_file(outputFilePtr, FMT_TOKEN_LINE, returnToken.id, returnToken.name, returnToken.name);
+    strcat(stmtBuffer, buffer);
 
     return returnToken;
 }
@@ -328,5 +345,7 @@ void print_line_to_listings()
     // Return the file to the previous position
     fseek(inputFilePtr, startPos, SEEK_SET);
 }
+
+
 
 // EOF

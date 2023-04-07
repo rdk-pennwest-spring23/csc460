@@ -9,9 +9,14 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#define FMT_PARSE_ERROR "Parse Error. Expected Token: %10s \t Actual Token: %10s"
+#define FMT_PARSE_ERROR "Parse Error. Expected Token: %-20s Actual Token: %s"
+#define FMT_PARSE_ERROR_TOTAL "Total Syntax Errors: %d"
+#define FMT_MATCH_TOKEN "ExpectedToken: %-20s Actual: %s"
 
 #include "scanner.h"
+
+int parseErrors;
+char stmtBuffer[1000];
 
 int run_parser();
 

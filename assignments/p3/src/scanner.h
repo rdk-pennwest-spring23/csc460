@@ -51,9 +51,12 @@
 
 
 #define FMT_LINE_FEED "[%d] %s\n"
-#define FMT_TOKEN_LINE "Token ID: %2d \t Token Type: %10s \t Actual Token: %s"
+#define FMT_STMT_FEED "Statement: %s\n"
+#define FMT_TOKEN_LINE "Token ID: %2d \t Token Type: %-10s \t Actual Token: %s"
+#define FMT_LEXICAL_ERRORS_TOTAL "Total Lexical Errors: %d"
 
-int lineNumber;
+int lineNumber, lexicalErrors;
+char buffer[1000];
 
 struct token {
     int id;
