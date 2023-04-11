@@ -197,7 +197,7 @@ struct token get_next_token()
 
     if (returnToken.id == tokenList[TOKEN_ID_COMMENT].id)
     {
-        while (curChar != 13)
+        while (curChar != 13 && curChar != EOF)
             curChar = fgetc(inputFilePtr);
             
         fseek(inputFilePtr, -1, SEEK_CUR);
