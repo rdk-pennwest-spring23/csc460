@@ -8,6 +8,7 @@
 
 #include "scanner.h"
 #include "parser.h"
+#include "generator.h"
 #include "log_util.h"
 #include "file_util.h"
 
@@ -44,6 +45,8 @@ int parse_systemGoal()
     else
         read_token();
 
+    generate_finish();
+
     return 1;
     
 }
@@ -55,9 +58,12 @@ int parse_program()
     struct token beginToken = tokenList[TOKEN_ID_BEGIN];
     struct token endToken = tokenList[TOKEN_ID_END];
 
+    /* #start */
+    generate_start();
+
     /* Begin */
     inToken = read_token();
-    write_to_file(outputFilePtr, FMT_MATCH_TOKEN, beginToken.name, buffer);
+    
     if ( !match(inToken, beginToken ))
     {
         write_to_file(listingFilePtr, FMT_PARSE_ERROR, beginToken.name, inToken.name);
@@ -70,7 +76,7 @@ int parse_program()
 
     /* End */
     inToken = read_token();
-    write_to_file(outputFilePtr, FMT_MATCH_TOKEN, endToken.name, buffer);
+    
     if (!match(inToken, endToken))
     {
         write_to_file(listingFilePtr, FMT_PARSE_ERROR, endToken.name, inToken.name);
@@ -117,12 +123,12 @@ int parse_statement()
     {
         log_debug("[%d] Parsing Assignment statement.", lineNumber);
         /* ID */
-        read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, idToken.name, buffer);
+        parse_ident();
+        
 
         /* Assign Op */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, assignopToken.name, buffer);
+        
         if (!match(inToken, assignopToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, assignopToken.name, inToken.name);
@@ -133,7 +139,7 @@ int parse_statement()
         parse_expression();
 
         /* ; */
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, semiToken.name, buffer);
+        
         inToken = read_token();
         if (!match(inToken, semiToken))
         {
@@ -148,11 +154,11 @@ int parse_statement()
         log_debug("[%d] Parsing Read statement.", lineNumber);
         /* READ */
         read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, readToken.name, buffer);
+        
 
         /* ( */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
+        
         if (!match(leftparenToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, leftparenToken.name, inToken.name);
@@ -164,7 +170,7 @@ int parse_statement()
 
         /* ) */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
+        
         if (!match(rightparenToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
@@ -173,7 +179,7 @@ int parse_statement()
 
         /* ; */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, semiToken.name, buffer);
+        
         if (!match(semiToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, semiToken.name, inToken.name);
@@ -187,11 +193,11 @@ int parse_statement()
         log_debug("[%d] Parsing Write statement.", lineNumber);
         /* WRITE */
         read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, writeToken.name, buffer);
+        
 
         /* ( */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
+        
         if (!match(leftparenToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, leftparenToken.name, inToken.name);
@@ -203,7 +209,7 @@ int parse_statement()
 
         /* ) */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
+        
         if (!match(rightparenToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
@@ -212,7 +218,7 @@ int parse_statement()
 
         /* ; */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, semiToken.name, buffer);
+        
         if (!match(semiToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, semiToken.name, inToken.name);
@@ -227,11 +233,11 @@ int parse_statement()
         log_debug("[%d] Parsing IF THEN statement.", lineNumber);
         /* IF */
         read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, ifToken.name, buffer);
+        
 
         /* ( */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
+        
         if (!match(leftparenToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, leftparenToken.name, inToken.name);
@@ -243,7 +249,7 @@ int parse_statement()
 
         /* ) */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
+        
         if (!match(rightparenToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
@@ -252,7 +258,7 @@ int parse_statement()
 
         /* THEN */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, thenToken.name, buffer);
+        
         if (!match(thenToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, thenToken.name, inToken.name);
@@ -272,12 +278,12 @@ int parse_statement()
     {
         log_debug("[%d] Parsing WHILE statement.", lineNumber);
         /* WHILE */
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, tokenList[TOKEN_ID_WHILE].name, buffer);
+        
         read_token();
 
         /* ( */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
+        
         if (!match(inToken, leftparenToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, leftparenToken.name, inToken.name);
@@ -289,7 +295,7 @@ int parse_statement()
 
         /* ) */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
+        
         if (!match(inToken, rightparenToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
@@ -301,7 +307,7 @@ int parse_statement()
 
         /* ENDWHILE */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, tokenList[TOKEN_ID_ENDWHILE].name, buffer);
+        
         if (!match(inToken, tokenList[TOKEN_ID_ENDWHILE]))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, tokenList[TOKEN_ID_ENDWHILE].name, inToken.name);
@@ -339,14 +345,14 @@ int parse_ifTail()
     {
         /* ELSE */
         read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, elseToken.name, buffer);
+        
         
         /* <stmt list> */
         parse_statementList();
     }
 
     inToken = read_token();
-    write_to_file(outputFilePtr, FMT_MATCH_TOKEN, endifToken.name, buffer);
+    
     if (!match(endifToken, inToken))
     {
         write_to_file(listingFilePtr, FMT_PARSE_ERROR, endifToken.name, inToken.name);
@@ -366,9 +372,7 @@ int parse_idList()
     struct token commaToken = tokenList[TOKEN_ID_COMMA];
 
     /* ID */
-    inToken = read_token();
-    write_to_file(outputFilePtr, FMT_MATCH_TOKEN, idToken.name, buffer);
-    if (!match(idToken, inToken))
+    if (!parse_ident())
     {
         write_to_file(listingFilePtr, FMT_PARSE_ERROR, idToken.name, inToken.name);
         status = 0;
@@ -380,7 +384,7 @@ int parse_idList()
     {
         /* , */
         read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, commaToken.name, buffer);
+        
 
         /* <id list> */
         parse_idList();
@@ -402,7 +406,7 @@ int parse_exprList()
     {
         /* , */
         read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, commaToken.name, buffer);
+        
 
         /* <expr list> */
         parse_exprList();
@@ -430,7 +434,7 @@ int parse_expression()
         if (status = parse_addOp())
         {
             /* + */
-            write_to_file(outputFilePtr, FMT_MATCH_TOKEN, plusopToken.name, buffer);
+            
 
             /* <term> */
             status = parse_term();
@@ -460,7 +464,7 @@ int parse_term()
         {
             /* * */
             read_token();
-            write_to_file(outputFilePtr, FMT_MATCH_TOKEN, multopToken.name, buffer);
+            
 
             /* <factor> */
             parse_factor();
@@ -497,14 +501,14 @@ int parse_factor()
     {
         /* ( */
         read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
+        
 
         /* <expression> */
         parse_expression();
 
         /* ) */
         inToken = read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
+        
         if (!match(rightparenToken, inToken))
         {
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
@@ -517,24 +521,22 @@ int parse_factor()
     {
         /* - */
         read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, minusopToken.name, buffer);
+        
 
         /* <factor> */
         parse_factor();
     }
 
     /* ID */
-    else if (match(peek_next_token(), idToken))
-    {
-        read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, idToken.name, buffer);
+    else if (parse_ident())
+    {   
     }
 
     /* INTLITERAL */
     else if (match(peek_next_token(), intlitToken))
     {
         read_token();
-        write_to_file(outputFilePtr, FMT_MATCH_TOKEN, intlitToken.name, buffer);
+        
     }
 
     else
@@ -730,8 +732,10 @@ int parse_lPrimary()
         read_token();
 
     /* ID */
-    else if (match(peekToken, idToken))
-        read_token();
+    else if (parse_ident())
+    {
+
+    }
 
     /* ( <condition> ) */
     else if (match(peekToken, leftparenToken))
@@ -785,6 +789,21 @@ int parse_relOp()
         match(peekToken, tokenList[TOKEN_ID_NOTEQUALOP])
     )
         read_token();
+    else
+        status = 0;
+
+    return status;
+}
+
+int parse_ident()
+{
+    int status = 1;
+
+    struct token idToken = tokenList[TOKEN_ID_ID];
+    if (match(peek_next_token(), idToken))
+    {
+        read_token();
+    }
     else
         status = 0;
 
