@@ -32,38 +32,38 @@ int open_files(int argc, char *argv[])
 {
 	int status = SUCCESS;
 
-	// Check for input file name from command line args
+	/* Check for input file name from command line args */
 	if (argc > 1)
 	{
 		strcpy(inputFileName, argv[1]);
 		log_info("Detected input file name '%s' from command line.", inputFileName);
 	} else {
-		// Get an input file name from the user
+		/* Get an input file name from the user */
 		printf("Please enter an input file name:\n>> ");
 		scanf("%s", inputFileName);
 	}
 	
-	// Check for Output File Name from command line args
+	/* Check for Output File Name from command line args */
 	if (argc > 2)
 	{
 		strcpy(outputFileName, argv[2]);
 		log_info("Detected output file name '%s' from command line.", inputFileName);
 	} else {
-		// Get an input file name from the user
+		/* Get an input file name from the user */
 		printf("Please enter an output file name:\n>> ");
 		scanf("%s", outputFileName);
 	}
 
-	// Check for a valid input file
+	/* Check for a valid input file */
 	int validInput = 0;
 	while (status == SUCCESS && !validInput)
 	{
-		// Check if the input file name has an extension
+		/* Check if the input file name has an extension */
 		char *extIndex = strrchr(inputFileName, '.');
 		if (!extIndex || extIndex == inputFileName)
 			strcat(inputFileName, ".in");
 
-		// Check if the input file name exists as a file
+		/* Check if the input file name exists as a file */
 		if (file_exists(inputFileName))
 		{
 			log_info("Input file '%s' exists, using for input file.", inputFileName);
@@ -71,32 +71,32 @@ int open_files(int argc, char *argv[])
 		} else {
 			log_info("Input file '%s' does not exist, requesting new file name from user.", inputFileName);
 			
-			// Get new name from user
+			/* Get new name from user */
 			printf("Please enter an input file name (q to quit):\n>> ");
 			scanf("%s", inputFileName);
 
-			// Check if the user wants to quit
+			/* Check if the user wants to quit */
 			if (inputFileName[0] == 'q')
 				status = FAILURE;
 		}
 	}
 
-	// Check for a valid output file
+	/* Check for a valid output file */
 	int validOutput = 0;
 	backup = 0;
 	while(status == SUCCESS && !validOutput)
 	{
-		// Check if the ouput file has an extension
+		/* Check if the ouput file has an extension */
 		char *extIndex = strrchr(outputFileName, '.');
 		if (!extIndex || extIndex == outputFileName)
 			strcat(outputFileName, ".out");
 
-		// Check if the output file already exists
+		/* Check if the output file already exists */
 		if (file_exists(outputFileName))
 		{
 			log_info("Output file '%s' already exists, requesting choice from user for how to proceed.", outputFileName);
 
-			// Get user option for how to proceed
+			/* Get user option for how to proceed */
 			printf("\nOutput file '%s' already exists. Please choose from one of the below options.\n", outputFileName);
 			printf("\t1) Overwrite the output file.\n"
 				   "\t2) Backup the output file.\n"
@@ -108,25 +108,25 @@ int open_files(int argc, char *argv[])
 
 			switch(choice[0])
 			{
-				case '1': // Overwrite
+				case '1': /* Overwrite */
 					log_info("User chose overwrite the output file.");
 					delete_file(outputFileName);
 					break;
 
-				case '2': // Backup
+				case '2': /* Backup */
 					log_info("User chose to backup the output file.");
 					backup = 1;
 					backup_file(outputFileName);
 					delete_file(outputFileName);
 					break;
 
-				case '3': // Enter new name
+				case '3': /* Enter new name */
 					log_info("User chose to enter a new output file name.");
 					printf("Enter a new file name:\n>> ");
 					scanf("%s", outputFileName);
 					break;
 
-				case '4': // Quit
+				case '4': /* Quit */
 					log_info("User chose to terminate program.");
 					status = FAILURE;
 					break;
@@ -136,7 +136,7 @@ int open_files(int argc, char *argv[])
 			}
 
 		} else {
-			// If the file does not exist, use it as the output file.
+			/* If the file does not exist, use it as the output file. */
 			log_info("Output file '%s' is designated as the output file.", outputFileName);
 			validOutput = 1;
 		}
@@ -144,26 +144,26 @@ int open_files(int argc, char *argv[])
 
 	if (status == SUCCESS)
 	{
-		// Extract the generic file name from output file name
+		/* Extract the generic file name from output file name */
 		char genericFileName[MAX_FILE_NAME_SIZE];
 		strncpy(genericFileName, outputFileName, strlen(outputFileName)-4);
 
-		// Generate the listing file
+		/* Generate the listing file */
 		generate_listings_file(genericFileName);
 
-		// Generate the temporary file
+		/* Generate the temporary file */
 		generate_temporary_file(genericFileName);
 
-		// Open the files
+		/* Open the files */
 		inputFilePtr = fopen(inputFileName, "r");
 		outputFilePtr = fopen(outputFileName, "w");
 		listingFilePtr = fopen(listingsFileName, "w");
 		tempFilePtr = fopen(tempFileName, "w");
 	}
 
-	// Return the status of the file open operation
+	/* Return the status of the file open operation */
 	return status;
-} // open_files
+} /* open_files */
 
 
 /**
@@ -182,7 +182,7 @@ int close_files()
 	if (tempFilePtr != NULL)
 		fclose(tempFilePtr);
 
-	// Delete the temporary file.
+	/* Delete the temporary file. */
 	delete_file(tempFileName);
 
 	return SUCCESS;
@@ -242,7 +242,7 @@ int backup_file(char* fileName)
 {
 	log_info("Creating backup file for '%s' file.", fileName);
 
-	// Create the name of the backup file
+	/* Create the name of the backup file */
 	char backupFileName[MAX_FILE_NAME_SIZE];
 	time_t now;
 	time(&now);
@@ -253,20 +253,20 @@ int backup_file(char* fileName)
 		if (date[i] == ':')
 			date[i] = '-';
 
-	// Extract the name from the given fileName
+	/* Extract the name from the given fileName */
 	strcpy(backupFileName, fileName);
 	backupFileName[strlen(backupFileName) - 4] = '-';
 
-	// Build the name of the backup file
+	/* Build the name of the backup file */
 	strcat(backupFileName, "-");
 	strcat(backupFileName, date);
 	strcat(backupFileName, ".bak");
 
-	// Open the files
+	/* Open the files */
 	FILE *source = fopen(fileName, "r");
 	FILE *dest = fopen(backupFileName, "w");
 	
-	// Copy the data
+	/* Copy the data */
 	char c = fgetc(source);
 	while ( c != EOF)
 	{
@@ -274,7 +274,7 @@ int backup_file(char* fileName)
 		c = getc(source);
 	}
 
-	// Close the files
+	/* Close the files */
 	fclose(source);
 	fclose(dest);
 
@@ -304,7 +304,7 @@ int delete_file(char* fileName)
 	}
 
 	return status;
-} // delete_file
+} /* delete_file */
 
 
 /**
@@ -324,7 +324,7 @@ int write_to_file(FILE* file, const char* fmt, ...)
 	va_end(args);
 
 	return SUCCESS;
-} // write_to_file
+} /* write_to_file */
 
 
 /**
@@ -342,4 +342,4 @@ int file_exists(char* fileName)
 	return status;
 }
 
-// EOF
+/* EOF */

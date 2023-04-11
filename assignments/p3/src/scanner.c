@@ -27,7 +27,7 @@ int init_scanner()
     lineNumber = 1;
     lexicalErrors = 0;
 
-    // Set up the special tokens
+    /* Set up the special tokens */
     log_debug("Initializing special tokens.");
     errorToken = create_token (0, "ERROR");
     idToken = create_token (1, "ID");
@@ -35,7 +35,7 @@ int init_scanner()
     scaneofToken = create_token (33, "SCANEOF");
     newlineToken = create_token(34, "NEWLINE");
 
-    // Set up the special states
+    /* Set up the special states */
     log_debug("Initializing special states.");
     startState = create_new_transition(startState, errorToken);
     for (i = 0; i < 128; i++)
@@ -53,7 +53,7 @@ int init_scanner()
         intState->transition_table[i] = intState;
 
 
-    // Add the string tokens
+    /* Add the string tokens */
     log_debug("Adding alpha transitions.");
     add_alpha_transition(startState, "BEGIN", create_token(3, "BEGIN"));
     add_alpha_transition(startState, "END", create_token(4, "END"));
@@ -69,12 +69,12 @@ int init_scanner()
     add_alpha_transition(startState, "TRUE", create_token(14, "TRUEOP"));
     add_alpha_transition(startState, "NULL", create_token(15, "NULLOP"));
 
-    // Add the integer transitions
+    /* Add the integer transitions */
     log_debug("Adding integer transitions.");
     for (i = '0'; i <= '9'; i++)
         startState->transition_table[i] = intState;
 
-    // Add the symbol transitions
+    /* Add the symbol transitions */
     log_debug("Adding symbol transitions.");
     add_symbol_transition(startState, "(", create_token(16, "LPAREN"));
     add_symbol_transition(startState, ")", create_token(17, "RPAREN"));
@@ -95,7 +95,7 @@ int init_scanner()
     add_symbol_transition(startState, "--", create_token(32, "COMMENT"));
     
 
-    // Handle Negative Numbers
+    /* Handle Negative Numbers */
     log_debug("Handling negative numbers transitions.");
     struct state *minusState = startState->transition_table['-'];
     for (i = '0'; i <= '9'; i++)
@@ -107,21 +107,21 @@ int init_scanner()
 
 struct token peek_next_token()
 {
-    // Save the current position in the file
+    /* Save the current position in the file */
     long filePos = ftell(inputFilePtr);
 
-    // Get the next token
+    /* Get the next token */
     struct token returnToken;
 
-    // Make sure we don't use a newline token
+    /* Make sure we don't use a newline token */
     do {
         returnToken = get_next_token();
     } while (returnToken.id == newlineToken.id || returnToken.id == tokenList[TOKEN_ID_COMMENT].id);
 
-    // Reset the file pointer to the previous position
+    /* Reset the file pointer to the previous position */
     fseek(inputFilePtr, filePos, SEEK_SET);
 
-    // Return the token
+    /* Return the token */
     return returnToken;
 }
 
@@ -135,11 +135,11 @@ struct token get_next_token()
 
     curChar = fgetc(inputFilePtr);
 
-    // Skip whitespace
+    /* Skip whitespace */
     while (curChar == ' ' || curChar == '\t')
         curChar = fgetc(inputFilePtr);
 
-    // Check for new Line
+    /* Check for new Line */
     if (curChar == 13 || curChar == 10)
     {
         foundToken = 1;
@@ -148,7 +148,7 @@ struct token get_next_token()
             curChar = fgetc(inputFilePtr);
     }
 
-    // If we're at the end of the file, return the SCANEOF Token
+    /* If we're at the end of the file, return the SCANEOF Token */
     if (curChar == EOF)
     {
         foundToken = 1;
@@ -157,16 +157,16 @@ struct token get_next_token()
     
     while(!foundToken)
     {
-        // Upper case if char is an alpha
+        /* Upper case if char is an alpha */
         if (curChar >= 'a' && curChar <= 'z')
             curChar ^= 0x20;
 
         write_to_file(tempFilePtr," Current char: %i", curChar);
 
-        // Check if the transition is to a valid state
+        /* Check if the transition is to a valid state */
         if (curChar == EOF)
         {
-            // We found our token
+            /* We found our token */
             foundToken = 1;
             returnToken = curState->token;
         }
@@ -176,14 +176,14 @@ struct token get_next_token()
             buffer[strlen(buffer)] = curChar;
             curChar = fgetc(inputFilePtr);
         }
-        // If the transition is to an invalid state
+        /* If the transition is to an invalid state */
         else 
         {
-            // Rewind one character
+            /* Rewind one character */
             if (curState->token.id != errorToken.id)
                 fseek(inputFilePtr, -1, SEEK_CUR);
 
-            // We found our token
+            /* We found our token */
             foundToken = 1;
             returnToken = curState->token;
         }
@@ -212,10 +212,10 @@ struct token read_token()
 {
     struct token returnToken;
 
-    // Get the next token
+    /* Get the next token */
     returnToken = get_next_token();
 
-    // Check for new lines
+    /* Check for new lines */
     while (returnToken.id == newlineToken.id || returnToken.id == tokenList[TOKEN_ID_COMMENT].id)
     {
         if (returnToken.id == newlineToken.id)
@@ -223,11 +223,11 @@ struct token read_token()
             write_to_file(listingFilePtr, "");
             print_line_to_listings();
 
-            // Write out the Statement Buffer to the Output File
+            /* Write out the Statement Buffer to the Output File */
             write_to_file(outputFilePtr, "\nStatement: %s\n", stmtBuffer);
             memset(stmtBuffer, 0, 1000);
         }
-        // Get the next token
+        /* Get the next token */
         returnToken = get_next_token();
     }
 
@@ -255,7 +255,7 @@ void add_alpha_transition(struct state *curState, char *str, struct token target
 {
     char curChar = str[0];
 
-    // If this is the last state
+    /* If this is the last state */
     if (curChar == '\0')
     {
         curState->token = target;
@@ -277,14 +277,14 @@ void add_alpha_transition(struct state *curState, char *str, struct token target
         add_alpha_transition(nextState, ++str, target);
     }
     
-    // Setup the transition to any other alpha characters
+    /* Setup the transition to any other alpha characters */
     int i;
     for (i = 'A'; i <= 'Z'; i++)
     {
         if (curState->transition_table[i]->id == startState->id)
         {
-            curState->transition_table[i] = idState;    // Upper case alphas
-            curState->transition_table[i+32] = idState; // Lower case alphas
+            curState->transition_table[i] = idState;    /* Upper case alphas */
+            curState->transition_table[i+32] = idState; /* Lower case alphas */
         }
     }
 
@@ -295,7 +295,7 @@ void add_symbol_transition(struct state *curState, char *str, struct token targe
 {
     char curChar = str[0];
 
-    // If this is the last state
+    /* If this is the last state */
     if (curChar == '\0')
     {
         curState->token = target;
@@ -331,7 +331,7 @@ void print_line_to_listings()
     int pos = 0;
     long startPos = ftell(inputFilePtr);
 
-    // 
+    /*  */
     c = fgetc(inputFilePtr);
     while (c != 13 && c != EOF)
     {
@@ -342,10 +342,10 @@ void print_line_to_listings()
     buffer[pos] = 0;
     write_to_file(listingFilePtr, FMT_LINE_FEED, lineNumber++, buffer);
 
-    // Return the file to the previous position
+    /* Return the file to the previous position */
     fseek(inputFilePtr, startPos, SEEK_SET);
 }
 
 
 
-// EOF
+/* EOF */

@@ -25,29 +25,29 @@ int main(int argc, char *argv[])
 {
 	int status = 0;
 	
-	// // Open Files
+	/* // Open Files */
 	if (status = open_files(argc, argv))
 		log_info("Successfully opened files.");
 	else
 		log_error("Unable to successfully open files.");
 
-	// Init the Scanner
+	/* Init the Scanner */
 	if (status)
 		status = init_scanner();
 
-	// Run the Parser
+	/* Run the Parser */
 	if (status)
 	{
 		status = run_parser();
 	}
 
-	// Clean up.
+	/* Clean up. */
 	if (status = close_files())
 		log_info("Successfully cleaned up files.");
 	else
 		log_error("Unable to successfully clean up files.");
 	
-	// End
+	/* End */
 	log_info("Finishing up.");
 	return 0;
 }

@@ -101,4 +101,4 @@ void print_line_to_listings();
 
 #endif
 
-// EOF
+/* EOF */

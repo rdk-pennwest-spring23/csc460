@@ -99,4 +99,4 @@ int file_exists(char* fileName);
 
 
 #endif
-// EOF
+/* EOF */

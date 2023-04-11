@@ -35,7 +35,7 @@ int parse_systemGoal()
     log_debug("Parsing system goal.");
     parse_program();
     
-    // Check for EOF
+    /* Check for EOF */
     if (!match( peek_next_token(), scaneofToken ))
     {
         write_to_file(listingFilePtr, FMT_PARSE_ERROR, scaneofToken.name, read_token().name);
@@ -55,7 +55,7 @@ int parse_program()
     struct token beginToken = tokenList[TOKEN_ID_BEGIN];
     struct token endToken = tokenList[TOKEN_ID_END];
 
-    // Begin
+    /* Begin */
     inToken = read_token();
     write_to_file(outputFilePtr, FMT_MATCH_TOKEN, beginToken.name, buffer);
     if ( !match(inToken, beginToken ))
@@ -64,11 +64,11 @@ int parse_program()
         parseErrors++;
     }
 
-    // Statement List
+    /* Statement List */
     parse_statementList();
 
 
-    // End
+    /* End */
     inToken = read_token();
     write_to_file(outputFilePtr, FMT_MATCH_TOKEN, endToken.name, buffer);
     if (!match(inToken, endToken))
@@ -112,14 +112,14 @@ int parse_statement()
     struct token rightparenToken = tokenList[TOKEN_ID_RPAREN];
     struct token semiToken = tokenList[TOKEN_ID_SEMICOLON];
 
-    // Case 1: <ID> := <expression>
+    /* Case 1: <ID> := <expression> */
     if ( match(peek_next_token(), idToken) )
     {
-        // ID
+        /* ID */
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, idToken.name, buffer);
 
-        // Assign Op
+        /* Assign Op */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, assignopToken.name, buffer);
         if (!match(inToken, assignopToken))
@@ -128,10 +128,10 @@ int parse_statement()
             parseErrors++;
         }
 
-        // Expression
+        /* Expression */
         parse_expression();
 
-        // ;
+        /* ; */
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, semiToken.name, buffer);
         inToken = read_token();
         if (!match(inToken, semiToken))
@@ -141,14 +141,14 @@ int parse_statement()
         }
     }
 
-    // READ ( <id list> );
+    /* READ ( <id list> ); */
     else if (match(peek_next_token(), readToken))
     {
-        // READ
+        /* READ */
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, readToken.name, buffer);
 
-        // (
+        /* ( */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
         if (!match(leftparenToken, inToken))
@@ -157,10 +157,10 @@ int parse_statement()
             parseErrors++;
         }
 
-        // <id list>
+        /* <id list> */
         parse_idList();
 
-        // )
+        /* ) */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
         if (!match(rightparenToken, inToken))
@@ -169,7 +169,7 @@ int parse_statement()
             parseErrors++;
         }
 
-        // ;
+        /* ; */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, semiToken.name, buffer);
         if (!match(semiToken, inToken))
@@ -179,14 +179,14 @@ int parse_statement()
         }
     }
 
-    // WRITE ( <expr list> );
+    /* WRITE ( <expr list> ); */
     else if (match(peek_next_token(), writeToken))
     {
-        // WRITE
+        /* WRITE */
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, writeToken.name, buffer);
 
-        // (
+        /* ( */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
         if (!match(leftparenToken, inToken))
@@ -195,10 +195,10 @@ int parse_statement()
             parseErrors++;
         }
 
-        // <expr list>
+        /* <expr list> */
         parse_exprList();
 
-        // )
+        /* ) */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
         if (!match(rightparenToken, inToken))
@@ -207,7 +207,7 @@ int parse_statement()
             parseErrors++;
         }
 
-        // ;
+        /* ; */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, semiToken.name, buffer);
         if (!match(semiToken, inToken))
@@ -218,14 +218,14 @@ int parse_statement()
         
     }
 
-    // IF ( <condition> ) THEN <stmt list> <if tail>
+    /* IF ( <condition> ) THEN <stmt list> <if tail> */
     else if (match(peek_next_token(), ifToken))
     {
-        // IF
+        /* IF */
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, ifToken.name, buffer);
 
-        // (
+        /* ( */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
         if (!match(leftparenToken, inToken))
@@ -234,10 +234,10 @@ int parse_statement()
             parseErrors++;
         }
 
-        // <condition>
+        /* <condition> */
         parse_condition();
 
-        // )
+        /* ) */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
         if (!match(rightparenToken, inToken))
@@ -246,7 +246,7 @@ int parse_statement()
             parseErrors++;
         }
 
-        // THEN
+        /* THEN */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, thenToken.name, buffer);
         if (!match(thenToken, inToken))
@@ -255,22 +255,22 @@ int parse_statement()
             parseErrors++;
         }
 
-        // <stmt list>
+        /* <stmt list> */
         parse_statementList();
 
-        // <if tail>
+        /* <if tail> */
         parse_ifTail();
 
     }
 
-    // WHILE ( <condition> ) {<statementlist>} ENDWHILE
+    /* WHILE ( <condition> ) {<statementlist>} ENDWHILE */
     else if (match(peek_next_token(), tokenList[TOKEN_ID_WHILE]))
     {
-        // WHILE
+        /* WHILE */
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, tokenList[TOKEN_ID_WHILE].name, buffer);
         read_token();
 
-        // (
+        /* ( */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
         if (!match(inToken, leftparenToken))
@@ -279,10 +279,10 @@ int parse_statement()
             parseErrors++;
         }
 
-        // <condition>
+        /* <condition> */
         parse_condition();
 
-        // )
+        /* ) */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
         if (!match(inToken, rightparenToken))
@@ -291,10 +291,10 @@ int parse_statement()
             parseErrors++;
         }
 
-        // <statement list>
+        /* <statement list> */
         parse_statementList();
 
-        // ENDWHILE
+        /* ENDWHILE */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, tokenList[TOKEN_ID_ENDWHILE].name, buffer);
         if (!match(inToken, tokenList[TOKEN_ID_ENDWHILE]))
@@ -329,14 +329,14 @@ int parse_ifTail()
     struct token elseToken = tokenList[TOKEN_ID_ELSE];
     struct token endifToken = tokenList[TOKEN_ID_ENDIF];
 
-    // ELSE <stmt list>
+    /* ELSE <stmt list> */
     if (match(peek_next_token(), elseToken))
     {
-        // ELSE
+        /* ELSE */
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, elseToken.name, buffer);
         
-        // <stmt list>
+        /* <stmt list> */
         parse_statementList();
     }
 
@@ -360,7 +360,7 @@ int parse_idList()
     struct token idToken = tokenList[TOKEN_ID_ID];
     struct token commaToken = tokenList[TOKEN_ID_COMMA];
 
-    //ID
+    /* ID */
     inToken = read_token();
     write_to_file(outputFilePtr, FMT_MATCH_TOKEN, idToken.name, buffer);
     if (!match(idToken, inToken))
@@ -370,14 +370,14 @@ int parse_idList()
         parseErrors++;
     }
 
-    // Optional: , <id list>
+    /* Optional: , <id list> */
     if (match(peek_next_token(), commaToken))
     {
-        // ,
+        /* , */
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, commaToken.name, buffer);
 
-        // <id list>
+        /* <id list> */
         parse_idList();
     }
 
@@ -395,11 +395,11 @@ int parse_exprList()
 
     if (match(peek_next_token(), commaToken))
     {
-        // ,
+        /* , */
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, commaToken.name, buffer);
 
-        // <expr list>
+        /* <expr list> */
         parse_exprList();
     }
 
@@ -424,11 +424,11 @@ int parse_expression()
     {
         if (parse_addOp())
         {
-            // +
+            /* + */
             read_token();
             write_to_file(outputFilePtr, FMT_MATCH_TOKEN, plusopToken.name, buffer);
 
-            // <term>
+            /* <term> */
             parse_term();
         }
     }
@@ -454,11 +454,11 @@ int parse_term()
     {
         if (match(peek_next_token(), multopToken))
         {
-            // *
+            /* * */
             read_token();
             write_to_file(outputFilePtr, FMT_MATCH_TOKEN, multopToken.name, buffer);
 
-            // <term>
+            /* <term> */
             parse_factor();
         }
     }
@@ -488,17 +488,17 @@ int parse_factor()
     struct token leftparenToken = tokenList[TOKEN_ID_LPAREN];
     struct token rightparenToken = tokenList[TOKEN_ID_RPAREN];
 
-    // ( <expression> )
+    /* ( <expression> ) */
     if (match(peek_next_token(), leftparenToken))
     {
-        // (
+        /* ( */
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, leftparenToken.name, buffer);
 
-        // <expression>
+        /* <expression> */
         parse_expression();
 
-        // )
+        /* ) */
         inToken = read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, rightparenToken.name, buffer);
         if (!match(rightparenToken, inToken))
@@ -508,25 +508,25 @@ int parse_factor()
         }
     }
 
-    // - <factor>
+    /* - <factor> */
     else if (match(peek_next_token(), minusopToken))
     {
-        // -
+        /* - */
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, minusopToken.name, buffer);
 
-        // <factor>
+        /* <factor> */
         parse_factor();
     }
 
-    // ID
+    /* ID */
     else if (match(peek_next_token(), idToken))
     {
         read_token();
         write_to_file(outputFilePtr, FMT_MATCH_TOKEN, idToken.name, buffer);
     }
 
-    // INTLITERAL
+    /* INTLITERAL */
     else if (match(peek_next_token(), intlitToken))
     {
         read_token();
@@ -584,13 +584,13 @@ int parse_condition()
     log_debug("Parsing condition.");
     int status = 1;
 
-    // <addition>
+    /* <addition> */
     parse_addition();
 
-    // <relop>
+    /* <relop> */
     if (status = parse_relOp())
     {
-        // <addition>
+        /* <addition> */
         parse_addition();
     }
 
@@ -608,13 +608,13 @@ int parse_addition()
 {
     log_debug("Parsing addition.");
     int status = 1;
-    // <multiplication>
+    /* <multiplication> */
     status = parse_multiplication();
 
-    // <addOp>
+    /* <addOp> */
     if (parse_addOp())
     {
-        // <multiplication>
+        /* <multiplication> */
         parse_multiplication();
     }
 
@@ -633,13 +633,13 @@ int parse_multiplication()
     log_debug("Parsing multiplication.");
     int status = 1;
 
-    // <unary>
+    /* <unary> */
     status = parse_unary();
 
-    // <multOp>
+    /* <multOp> */
     if (parse_multOp())
     {
-        // <unary>
+        /* <unary> */
         parse_unary();
     }
 }
@@ -662,27 +662,27 @@ int parse_unary()
     struct token notToken = tokenList[TOKEN_ID_NOTOP];
     struct token minusOp = tokenList[TOKEN_ID_MINUSOP];
 
-    // ! <unary>
+    /* ! <unary> */
     if (match(peek_next_token(), notToken))
     {
-        // !
+        /* ! */
         read_token();
 
-        // <unary>
+        /* <unary> */
         parse_unary();
     }
 
-    // - <unary>
+    /* - <unary> */
     else if (match(peek_next_token(), minusOp))
     {
-        // -
+        /* - */
         read_token();
 
-        // <unary>
+        /* <unary> */
         parse_unary();
     }
 
-    // <lprimary>
+    /* <lprimary> */
     else
     {
         status = parse_lPrimary();
@@ -719,38 +719,38 @@ int parse_lPrimary()
 
     peekToken = peek_next_token();
 
-    // INTLITERAL
+    /* INTLITERAL */
     if (match(peekToken, intlitToken))
         read_token();
 
-    // ID
+    /* ID */
     else if (match(peekToken, idToken))
         read_token();
 
-    // ( <condition> )
+    /* ( <condition> ) */
     else if (match(peekToken, leftparenToken))
     {
-        // (
+        /* ( */
         read_token();
 
-        // <condition>
+        /* <condition> */
         parse_condition();
 
-        // )
+        /* ) */
         inToken = read_token();
         if (!match(rightparenToken, inToken))
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
     }
 
-    // FALSEOP
+    /* FALSEOP */
     else if (match(peekToken, falseToken))
         read_token();
 
-    // TRUEOP
+    /* TRUEOP */
     else if (match(peekToken, trueToken))
         read_token();
 
-    // NULLOP
+    /* NULLOP */
     else if (match(peekToken, nullToken))
         read_token();
 
@@ -785,4 +785,4 @@ int parse_relOp()
     return status;
 }
 
-// EOF
+/* EOF */
