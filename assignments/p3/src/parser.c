@@ -585,7 +585,7 @@ int parse_condition()
     int status = 1;
 
     /* <addition> */
-    parse_addition();
+    status = parse_addition();
 
     /* <relop> */
     if (status = parse_relOp())
@@ -612,10 +612,10 @@ int parse_addition()
     status = parse_multiplication();
 
     /* <addOp> */
-    if (parse_addOp())
+    if (status = parse_addOp())
     {
         /* <multiplication> */
-        parse_multiplication();
+        status = parse_multiplication();
     }
 
     return 1;
@@ -637,11 +637,13 @@ int parse_multiplication()
     status = parse_unary();
 
     /* <multOp> */
-    if (parse_multOp())
+    if (status = parse_multOp())
     {
         /* <unary> */
-        parse_unary();
+        status = parse_unary();
     }
+
+    return status;
 }
 
 
@@ -669,7 +671,7 @@ int parse_unary()
         read_token();
 
         /* <unary> */
-        parse_unary();
+        status = parse_unary();
     }
 
     /* - <unary> */
@@ -679,7 +681,7 @@ int parse_unary()
         read_token();
 
         /* <unary> */
-        parse_unary();
+        status = parse_unary();
     }
 
     /* <lprimary> */
@@ -734,7 +736,7 @@ int parse_lPrimary()
         read_token();
 
         /* <condition> */
-        parse_condition();
+        status = parse_condition();
 
         /* ) */
         inToken = read_token();
