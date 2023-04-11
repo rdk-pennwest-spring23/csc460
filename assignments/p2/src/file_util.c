@@ -321,6 +321,7 @@ int write_to_file(FILE* file, const char* fmt, ...)
 	va_start(args, fmt);
 	vfprintf(file, fmt, args);
 	fprintf(file, "\n");
+	fflush(file);
 	va_end(args);
 
 	return SUCCESS;
