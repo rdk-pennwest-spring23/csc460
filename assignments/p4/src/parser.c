@@ -23,6 +23,9 @@ int run_parser()
     write_to_file(listingFilePtr, FMT_LEXICAL_ERRORS_TOTAL, lexicalErrors);
     write_to_file(listingFilePtr, FMT_PARSE_ERROR_TOTAL, parseErrors);
 
+    if (lexicalErrors == 0 && parseErrors == 0)
+        write_to_file(listingFilePtr, "Program compiled successfully.");
+
     return 1;
 }
 
@@ -248,6 +251,8 @@ int parse_statement()
             parseErrors++;
         }
 
+        generate("if ("); 
+
         /* <condition> */
         parse_condition(&condRec);
 
@@ -269,7 +274,7 @@ int parse_statement()
             parseErrors++;
         }
 
-        generate("if (%s) {", condRec.e);
+        generate(") {");
 
         /* <stmt list> */
         parse_statementList();
@@ -297,8 +302,12 @@ int parse_statement()
             parseErrors++;
         }
 
+        generate("while(");
+
         /* <condition> */
         parse_condition(&condRec);
+
+        write_to_file(tempFilePtr, ") {");
 
         /* ) */
         inToken = read_token();
@@ -308,8 +317,6 @@ int parse_statement()
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, RParenToken.name, inToken.name);
             parseErrors++;
         }
-
-        generate("while(%s) {", condRec.e);
 
         /* <statement list> */
         parse_statementList();
@@ -404,7 +411,7 @@ int parse_idList()
         parseErrors++;
     }
 
-    /* Optional: , <id list> */
+    /* Optional: , <ident> */
     if (match(peek_next_token(), commaToken))
     {
         /* , */
@@ -649,11 +656,11 @@ int parse_condition(struct expr_rec * exprRec)
         /* <addition> */
         status = parse_addition(&rightRec);
 
-        *exprRec = gen_infix(leftRec.e, opRec.operation, rightRec.e);
+        generate("%s %s %s", leftRec.e, opRec.operation, rightRec.e);
     }
     else
     {
-        *exprRec = leftRec;
+        generate("%s", leftRec.e);
     }
 
     return status;
