@@ -10,6 +10,10 @@
  * @brief Program 2: Scanner
  */
 
+
+#ifndef FILE_UTIL_C
+#define FILE_UTIL_C
+
 #include "file_util.h"
 #include "scanner.h"
 #include "log_util.h"
@@ -349,4 +353,6 @@ int file_exists(char* fileName)
 	return status;
 }
 
+
+#endif
 /* EOF */
