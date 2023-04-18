@@ -88,6 +88,13 @@ int parse_program()
 
 }
 
+/**
+ * @brief 
+ * 
+ * <stmt list> -> <stmt> {<stmt list>}
+ * 
+ * @return int 
+ */
 int parse_statementList()
 {
     log_debug("Parsing StatementList.");
