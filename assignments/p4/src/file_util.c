@@ -150,7 +150,7 @@ int open_files(int argc, char *argv[])
 	{
 		/* Extract the generic file name from output file name */
 		char genericFileName[MAX_FILE_NAME_SIZE];
-		strncpy(genericFileName, outputFileName, strlen(outputFileName)-4);
+		strncpy(genericFileName, outputFileName, strlen(outputFileName)-2);
 
 		/* Generate the listing file */
 		generate_listings_file(genericFileName);

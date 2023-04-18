@@ -369,6 +369,13 @@ int parse_ifTail()
 
 }
 
+/**
+ * @brief 
+ * 
+ * <id list> -> <ident> {, <ident>}
+ * 
+ * @return int 
+ */
 int parse_idList()
 {
     log_debug("Parsing IDList");
@@ -395,10 +402,18 @@ int parse_idList()
     {
         /* , */
         read_token();
-        
 
-        /* <id list> */
-        parse_idList();
+        if (match(peek_next_token(), idToken))
+        {
+            exprRec = parse_ident();
+            read_id(exprRec);
+        }
+        else
+        {
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, idToken.name, inToken.name);
+            status = 0;
+            parseErrors++;
+        }
     }
 
     return status;
