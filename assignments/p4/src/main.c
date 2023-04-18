@@ -34,6 +34,8 @@ int main(int argc, char *argv[])
 	/* Init the Scanner */
 	if (status)
 		status = init_scanner();
+	
+	init_generator();
 
 	/* Run the Parser */
 	if (status)

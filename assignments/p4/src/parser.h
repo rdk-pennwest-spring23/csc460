@@ -14,6 +14,7 @@
 #define FMT_MATCH_TOKEN "ExpectedToken: %-20s Actual: %s"
 
 #include "scanner.h"
+#include "generator.h"
 
 int parseErrors;
 char stmtBuffer[1000];
@@ -29,17 +30,17 @@ int parse_statement();
 int parse_ifTail();
 int parse_idList();
 int parse_exprList();
-int parse_expression();
-int parse_term();
-int parse_factor();
-int parse_addOp();
-int parse_multOp();
-int parse_condition();
-int parse_addition();
-int parse_multiplication();
-int parse_unary();
-int parse_lPrimary();
-int parse_relOp();
-int parse_ident();
+int parse_expression(struct expr_rec * exprRec);
+int parse_term(struct expr_rec * exprRec);
+int parse_factor(struct expr_rec * exprRec);
+int parse_addOp(struct op_rec * opRec);
+int parse_multOp(struct op_rec * opRec);
+int parse_condition(struct expr_rec * exprRec);
+int parse_addition(struct expr_rec * exprRec);
+int parse_multiplication(struct expr_rec * exprRec);
+int parse_unary(struct expr_rec * exprRec);
+int parse_lPrimary(struct expr_rec * exprRec);
+int parse_relOp(struct op_rec * opRec);
+struct expr_rec parse_ident();
 
 #endif

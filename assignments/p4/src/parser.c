@@ -33,9 +33,10 @@ int match(struct token t1, struct token t2)
 
 int parse_systemGoal()
 {
-    log_debug("[%d] Parsing system goal.", lineNumber);
+    log_debug("Parsing System Goal.");
+
     parse_program();
-    
+        
     /* Check for EOF */
     if (!match( peek_next_token(), scaneofToken ))
     {
@@ -52,12 +53,11 @@ int parse_systemGoal()
 }
 
 int parse_program()
-{
-    log_debug("[%d] Parsing program.", lineNumber);
+{     
+    log_debug("Parsing Program.");
+    
     struct token inToken;
-    struct token beginToken = tokenList[TOKEN_ID_BEGIN];
-    struct token endToken = tokenList[TOKEN_ID_END];
-
+    
     /* #start */
     generate_start();
 
@@ -71,8 +71,7 @@ int parse_program()
     }
 
     /* Statement List */
-    parse_statementList();
-
+    parse_statementList(); 
 
     /* End */
     inToken = read_token();
@@ -91,7 +90,8 @@ int parse_program()
 
 int parse_statementList()
 {
-    log_debug("[%d] Parsing statement list.", lineNumber);
+    log_debug("Parsing StatementList.");
+
     if (parse_statement())
         parse_statementList();
 
@@ -105,63 +105,58 @@ int parse_statementList()
  */
 int parse_statement()
 {
-    log_debug("[%d] Parsing statement.", lineNumber);
+    log_debug("Parsing Statement.");
+
     int status = 1;
     struct token inToken;
-    struct token idToken = tokenList[TOKEN_ID_ID];
-    struct token assignopToken = tokenList[TOKEN_ID_ASSIGNOP];
-    struct token readToken = tokenList[TOKEN_ID_READ];
-    struct token writeToken = tokenList[TOKEN_ID_WRITE];
-    struct token ifToken = tokenList[TOKEN_ID_IF];
-    struct token thenToken = tokenList[TOKEN_ID_THEN];
-    struct token leftparenToken = tokenList[TOKEN_ID_LPAREN];
-    struct token rightparenToken = tokenList[TOKEN_ID_RPAREN];
-    struct token semiToken = tokenList[TOKEN_ID_SEMICOLON];
 
     /* Case 1: <ID> := <expression> */
     if ( match(peek_next_token(), idToken) )
     {
-        log_debug("[%d] Parsing Assignment statement.", lineNumber);
+        struct expr_rec source;
+        
         /* ID */
-        parse_ident();
+        struct expr_rec target = parse_ident();
         
 
         /* Assign Op */
         inToken = read_token();
         
-        if (!match(inToken, assignopToken))
+        if (!match(inToken, assignOpToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, assignopToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, assignOpToken.name, inToken.name);
             parseErrors++;
         }
 
         /* Expression */
-        parse_expression();
+        parse_expression(&source);
 
         /* ; */
-        
         inToken = read_token();
-        if (!match(inToken, semiToken))
+        if (!match(inToken, semicolonToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, semiToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, semicolonToken.name, inToken.name);
             parseErrors++;
         }
+        log_debug("Source expression for assignment: %s", source.e);
+        assign(target, source);
     }
 
     /* READ ( <id list> ); */
     else if (match(peek_next_token(), readToken))
     {
-        log_debug("[%d] Parsing Read statement.", lineNumber);
+
+        struct expr_rec readExpr;
+        
         /* READ */
         read_token();
-        
 
         /* ( */
         inToken = read_token();
         
-        if (!match(leftparenToken, inToken))
+        if (!match(LParenToken, inToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, leftparenToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, LParenToken.name, inToken.name);
             parseErrors++;
         }
 
@@ -171,18 +166,18 @@ int parse_statement()
         /* ) */
         inToken = read_token();
         
-        if (!match(rightparenToken, inToken))
+        if (!match(RParenToken, inToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, RParenToken.name, inToken.name);
             parseErrors++;
         }
 
         /* ; */
         inToken = read_token();
         
-        if (!match(semiToken, inToken))
+        if (!match(semicolonToken, inToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, semiToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, semicolonToken.name, inToken.name);
             parseErrors++;
         }
     }
@@ -190,7 +185,9 @@ int parse_statement()
     /* WRITE ( <expr list> ); */
     else if (match(peek_next_token(), writeToken))
     {
-        log_debug("[%d] Parsing Write statement.", lineNumber);
+        
+        struct expr_rec writeExpr;
+
         /* WRITE */
         read_token();
         
@@ -198,9 +195,9 @@ int parse_statement()
         /* ( */
         inToken = read_token();
         
-        if (!match(leftparenToken, inToken))
+        if (!match(LParenToken, inToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, leftparenToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, LParenToken.name, inToken.name);
             parseErrors++;
         }
 
@@ -210,18 +207,18 @@ int parse_statement()
         /* ) */
         inToken = read_token();
         
-        if (!match(rightparenToken, inToken))
+        if (!match(RParenToken, inToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, RParenToken.name, inToken.name);
             parseErrors++;
         }
 
         /* ; */
         inToken = read_token();
         
-        if (!match(semiToken, inToken))
+        if (!match(semicolonToken, inToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, semiToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, semicolonToken.name, inToken.name);
             parseErrors++;
         }
         
@@ -230,29 +227,29 @@ int parse_statement()
     /* IF ( <condition> ) THEN <stmt list> <if tail> */
     else if (match(peek_next_token(), ifToken))
     {
-        log_debug("[%d] Parsing IF THEN statement.", lineNumber);
+        struct expr_rec condRec;
+
         /* IF */
         read_token();
-        
 
         /* ( */
         inToken = read_token();
         
-        if (!match(leftparenToken, inToken))
+        if (!match(LParenToken, inToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, leftparenToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, LParenToken.name, inToken.name);
             parseErrors++;
         }
 
         /* <condition> */
-        parse_condition();
+        parse_condition(&condRec);
 
         /* ) */
         inToken = read_token();
         
-        if (!match(rightparenToken, inToken))
+        if (!match(RParenToken, inToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, RParenToken.name, inToken.name);
             parseErrors++;
         }
 
@@ -265,8 +262,12 @@ int parse_statement()
             parseErrors++;
         }
 
+        generate("if (%s) {", condRec.e);
+
         /* <stmt list> */
         parse_statementList();
+
+        generate("}");
 
         /* <if tail> */
         parse_ifTail();
@@ -276,31 +277,32 @@ int parse_statement()
     /* WHILE ( <condition> ) {<statementlist>} ENDWHILE */
     else if (match(peek_next_token(), tokenList[TOKEN_ID_WHILE]))
     {
-        log_debug("[%d] Parsing WHILE statement.", lineNumber);
+        struct expr_rec condRec;
         /* WHILE */
-        
         read_token();
 
         /* ( */
         inToken = read_token();
         
-        if (!match(inToken, leftparenToken))
+        if (!match(inToken, LParenToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, leftparenToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, LParenToken.name, inToken.name);
             parseErrors++;
         }
 
         /* <condition> */
-        parse_condition();
+        parse_condition(&condRec);
 
         /* ) */
         inToken = read_token();
         
-        if (!match(inToken, rightparenToken))
+        if (!match(inToken, RParenToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, RParenToken.name, inToken.name);
             parseErrors++;
         }
+
+        generate("while(%s) {", condRec.e);
 
         /* <statement list> */
         parse_statementList();
@@ -313,6 +315,8 @@ int parse_statement()
             write_to_file(listingFilePtr, FMT_PARSE_ERROR, tokenList[TOKEN_ID_ENDWHILE].name, inToken.name);
             parseErrors++;
         }
+
+        generate("}");
 
     }
 
@@ -333,29 +337,31 @@ int parse_statement()
  */
 int parse_ifTail()
 {
-    log_debug("[%d] Parsing If Tail.", lineNumber);
+
+    log_debug("Parsing IfTail.");
     
     int status = 1;
     struct token inToken;
-    struct token elseToken = tokenList[TOKEN_ID_ELSE];
-    struct token endifToken = tokenList[TOKEN_ID_ENDIF];
 
     /* ELSE <stmt list> */
     if (match(peek_next_token(), elseToken))
     {
         /* ELSE */
         read_token();
-        
+
+        generate("else {");
         
         /* <stmt list> */
         parse_statementList();
+
+        generate("}");
     }
 
     inToken = read_token();
     
-    if (!match(endifToken, inToken))
+    if (!match(endIfToken, inToken))
     {
-        write_to_file(listingFilePtr, FMT_PARSE_ERROR, endifToken.name, inToken.name);
+        write_to_file(listingFilePtr, FMT_PARSE_ERROR, endIfToken.name, inToken.name);
         parseErrors++;
     }
 
@@ -365,14 +371,19 @@ int parse_ifTail()
 
 int parse_idList()
 {
-    log_debug("[%d] Parsing ID List.", lineNumber);
+    log_debug("Parsing IDList");
+    
     int status = 1;
     struct token inToken;
-    struct token idToken = tokenList[TOKEN_ID_ID];
-    struct token commaToken = tokenList[TOKEN_ID_COMMA];
-
+    struct expr_rec exprRec;
+    
     /* ID */
-    if (!parse_ident())
+    if (match(peek_next_token(), idToken))
+    {
+        exprRec = parse_ident();
+        read_id(exprRec);
+    }
+    else
     {
         write_to_file(listingFilePtr, FMT_PARSE_ERROR, idToken.name, inToken.name);
         status = 0;
@@ -395,18 +406,20 @@ int parse_idList()
 
 int parse_exprList()
 {
-    log_debug("[%d] Parsing expression list.", lineNumber);
+    
+    log_debug("Parsing ExprList");
+
     int status = 1;
     struct token inToken;
-    struct token commaToken = tokenList[TOKEN_ID_COMMA];
+    struct expr_rec exprRec;
 
-    parse_expression();
+    parse_expression(&exprRec);
+    write_expr(exprRec);
 
     if (match(peek_next_token(), commaToken))
     {
         /* , */
         read_token();
-        
 
         /* <expr list> */
         parse_exprList();
@@ -423,22 +436,25 @@ int parse_exprList()
  * 
  * @return int 
  */
-int parse_expression()
+int parse_expression(struct expr_rec * exprRec)
 {
-    log_debug("[%d] Parsing expression.", lineNumber);
+    log_debug("Parsing expression.");
+
     int status = 1;
-    struct token plusopToken = tokenList[TOKEN_ID_PLUSOP];
+    struct expr_rec term1, term2;
+    struct op_rec opRec;
 
-    if (status = parse_term())
+    status = parse_term(&term1);
+
+    if(parse_addOp(&opRec))
     {
-        if (status = parse_addOp())
-        {
-            /* + */
-            
+        parse_term(&term2);
 
-            /* <term> */
-            status = parse_term();
-        }
+        *exprRec = gen_infix(term1.e, opRec.operation, term2.e);
+    }
+    else
+    {
+        *exprRec = term1;
     }
 
     return status;
@@ -451,29 +467,29 @@ int parse_expression()
  * 
  * @return int 
  */
-int parse_term()
+int parse_term(struct expr_rec * exprRec)
 {
-    log_debug("[%d] Parsing term.", lineNumber);
+
+    log_debug("Parsing Term.");
+
     int status = 1;
+    struct expr_rec term1, term2;
+    struct op_rec opRec;
 
-    struct token multopToken = tokenList[TOKEN_ID_MULTOP];
+    status = parse_factor(&term1);
 
-    if (status = parse_factor())
+    if (status && parse_multOp(&opRec))
     {
-        if (match(peek_next_token(), multopToken))
-        {
-            /* * */
-            read_token();
-            
-
-            /* <factor> */
-            parse_factor();
-        }
+        status = parse_factor(&term2);
+        *exprRec = gen_infix(term1.e, opRec.operation, term2.e);
+    }
+    else
+    {
+        *exprRec = term1;
     }
 
     return status;
-}
-
+} 
 
 /**
  * @brief Parses a factor
@@ -485,58 +501,58 @@ int parse_term()
  * 
  * @return int 
  */
-int parse_factor()
+int parse_factor(struct expr_rec * exprRec)
 {
-    log_debug("[%d] Parsing factor.", lineNumber);
+    log_debug("Parsing Factor.");
+
     int status = 1;
     struct token inToken;
-    struct token idToken = tokenList[TOKEN_ID_ID];
-    struct token intlitToken = tokenList[TOKEN_ID_INTLITERAL];
-    struct token minusopToken = tokenList[TOKEN_ID_MINUSOP];
-    struct token leftparenToken = tokenList[TOKEN_ID_LPAREN];
-    struct token rightparenToken = tokenList[TOKEN_ID_RPAREN];
+    struct expr_rec term1, term2;
 
     /* ( <expression> ) */
-    if (match(peek_next_token(), leftparenToken))
+    if (match(peek_next_token(), LParenToken))
     {
         /* ( */
         read_token();
-        
 
         /* <expression> */
-        parse_expression();
+        parse_expression(&term1);
 
         /* ) */
         inToken = read_token();
         
-        if (!match(rightparenToken, inToken))
+        if (!match(RParenToken, inToken))
         {
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, RParenToken.name, inToken.name);
             parseErrors++;
         }
+
+        *exprRec = term1;
     }
 
     /* - <factor> */
-    else if (match(peek_next_token(), minusopToken))
+    else if (match(peek_next_token(), minusOpToken))
     {
         /* - */
         read_token();
-        
 
         /* <factor> */
-        parse_factor();
+        parse_factor(&term1);
+
+        *exprRec = term1;
     }
 
     /* ID */
-    else if (parse_ident())
+    else if (match(peek_next_token(), idToken))
     {   
+        *exprRec = parse_ident();
     }
 
     /* INTLITERAL */
-    else if (match(peek_next_token(), intlitToken))
+    else if (match(peek_next_token(), intToken))
     {
         read_token();
-        
+        *exprRec = process_literal(buffer);
     }
 
     else
@@ -545,38 +561,46 @@ int parse_factor()
     return status;
 }
 
-int parse_addOp()
+int parse_addOp(struct op_rec * opRec)
 {
-    log_debug("[%d] Parsing AddOp.", lineNumber);
+    log_debug("Parsing AddOp.");
+
     int status = 1;
     struct token peekToken;
 
     peekToken = peek_next_token();
 
-    if (match(peekToken, tokenList[TOKEN_ID_PLUSOP]) || match(peekToken, tokenList[TOKEN_ID_MINUSOP]))
+    if (match(peekToken, plusOpToken) || match(peekToken, minusOpToken))
+    {
         read_token();
+        *opRec = process_op(buffer);
+    }
     else
         status = 0;
 
     return status;
 }
 
-int parse_multOp()
+int parse_multOp(struct op_rec * opRec)
 {
-    log_debug("Parsing MultOp");
+    
+    log_debug("Parsing MultOp.");
+
     int status = 1;
     struct token peekToken;
 
     peekToken = peek_next_token();
 
-    if (match(peekToken, tokenList[TOKEN_ID_MULTOP]) || match(peekToken, tokenList[TOKEN_ID_DIVOP]))
+    if (match(peekToken, multOpToken) || match(peekToken, divOpToken))
+    {
         read_token();
+        *opRec = process_op(buffer);
+    }
     else
         status = 0;
 
     return status;
-}
-
+} 
 
 /**
  * @brief Parses a condition.
@@ -585,19 +609,29 @@ int parse_multOp()
  * 
  * @return int 
  */
-int parse_condition()
+int parse_condition(struct expr_rec * exprRec)
 {
-    log_debug("[%d] Parsing condition.", lineNumber);
+
+    log_debug("Parsing Condition.");
+
     int status = 1;
+    struct op_rec opRec;
+    struct expr_rec leftRec, rightRec;
 
     /* <addition> */
-    status = parse_addition();
+    status = parse_addition(&leftRec);
 
     /* <relop> */
-    if (status = parse_relOp())
+    if (status = parse_relOp(&opRec))
     {
         /* <addition> */
-        parse_addition();
+        status = parse_addition(&rightRec);
+
+        *exprRec = gen_infix(leftRec.e, opRec.operation, rightRec.e);
+    }
+    else
+    {
+        *exprRec = leftRec;
     }
 
     return status;
@@ -610,48 +644,68 @@ int parse_condition()
  * 
  * @return int 
  */
-int parse_addition()
+int parse_addition(struct expr_rec * exprRec)
 {
-    log_debug("[%d] Parsing addition.", lineNumber);
+    
+    log_debug("Parsing addition.");
+
     int status = 1;
+    struct expr_rec leftRec, rightRec;
+    struct op_rec opRec;
+
     /* <multiplication> */
-    status = parse_multiplication();
+    status = parse_multiplication(&leftRec);
 
     /* <addOp> */
-    if (status = parse_addOp())
+    if (status = parse_addOp(&opRec))
     {
         /* <multiplication> */
-        status = parse_multiplication();
+        status = parse_multiplication(&rightRec);
+
+        *exprRec = gen_infix(leftRec.e, opRec.operation, rightRec.e);
     }
-
-    return 1;
-}
-
-/**
- * @brief Parses a multiplication clause
- * 
- * MULTIPLICATION -> <unary> {<multop> <unary>}
- * 
- * @return int 
- */
-int parse_multiplication()
-{
-    log_debug("[%d] Parsing multiplication.", lineNumber);
-    int status = 1;
-
-    /* <unary> */
-    status = parse_unary();
-
-    /* <multOp> */
-    if (status = parse_multOp())
+    else
     {
-        /* <unary> */
-        status = parse_unary();
+        *exprRec = leftRec;
     }
 
     return status;
 }
 
+/**
+ * @brief Parses a multiplication clause
+ * 
+ * MULTIPLICATION -> <unary> {<multOp> <unary>}
+ * 
+ * @return int 
+ */
+int parse_multiplication(struct expr_rec * exprRec)
+{
+
+    log_debug("Parsing Multiplication.");
+    
+    int status = 1;
+    struct expr_rec leftRec, rightRec;
+    struct op_rec opRec;
+
+    /* <unary> */
+    status = parse_unary(&leftRec);
+
+    /* <multOp> */
+    if (status = parse_multOp(&opRec))
+    {
+        /* <unary> */
+        status = parse_unary(&rightRec);
+
+        *exprRec = gen_infix(leftRec.e, opRec.operation, rightRec.e);
+    }
+    else
+    {
+        *exprRec = leftRec;
+    }
+
+    return status;
+} 
 
 /**
  * @brief Parses a unary clause
@@ -662,43 +716,46 @@ int parse_multiplication()
  * 
  * @return int 
  */
-int parse_unary()
+int parse_unary(struct expr_rec * outRec)
 {
-    log_debug("[%d] Parse unary.", lineNumber);
+
+    log_debug("Parsing Unary.");
+    
     int status = 1;
     struct token inToken;
-    struct token notToken = tokenList[TOKEN_ID_NOTOP];
-    struct token minusOp = tokenList[TOKEN_ID_MINUSOP];
+    struct expr_rec exprRec;
 
     /* ! <unary> */
-    if (match(peek_next_token(), notToken))
+    if (match(peek_next_token(), notOpToken))
     {
         /* ! */
         read_token();
 
         /* <unary> */
-        status = parse_unary();
+        status = parse_unary(&exprRec);
+        
+        *outRec = gen_infix("", "!", exprRec.e);
     }
 
     /* - <unary> */
-    else if (match(peek_next_token(), minusOp))
+    else if (match(peek_next_token(), minusOpToken))
     {
         /* - */
         read_token();
 
         /* <unary> */
-        status = parse_unary();
+        status = parse_unary(&exprRec);
+        *outRec = gen_infix("", "-", exprRec.e);
     }
 
     /* <lprimary> */
     else
     {
-        status = parse_lPrimary();
+        status = parse_lPrimary(outRec);
     }
     
     return status;
-}
-
+} 
 
 /**
  * @brief Parses an lprimary clause.
@@ -712,57 +769,63 @@ int parse_unary()
  * 
  * @return int 
  */
-int parse_lPrimary()
+int parse_lPrimary(struct expr_rec * exprRec)
 {
-    log_debug("[%d] Parsing lprimary.", lineNumber);
+
+    log_debug("Parsing LPrimary.");
+
     int status = 1;
     struct token inToken, peekToken;
-    struct token intlitToken = tokenList[TOKEN_ID_INTLITERAL];
-    struct token idToken = tokenList[TOKEN_ID_ID];
-    struct token falseToken = tokenList[TOKEN_ID_FALSE];
-    struct token trueToken = tokenList[TOKEN_ID_TRUE];
-    struct token nullToken = tokenList[TOKEN_ID_NULL];
-    struct token leftparenToken = tokenList[TOKEN_ID_LPAREN];
-    struct token rightparenToken = tokenList[TOKEN_ID_RPAREN];
-
     peekToken = peek_next_token();
 
     /* INTLITERAL */
-    if (match(peekToken, intlitToken))
+    if (match(peekToken, intToken))
+    {
         read_token();
+        *exprRec = process_literal(buffer);
+    }
 
     /* ID */
-    else if (parse_ident())
+    else if (match(peekToken, idToken))
     {
-
+        *exprRec = parse_ident();
     }
 
     /* ( <condition> ) */
-    else if (match(peekToken, leftparenToken))
+    else if (match(peekToken, LParenToken))
     {
         /* ( */
         read_token();
 
         /* <condition> */
-        status = parse_condition();
+        status = parse_condition(exprRec);
 
         /* ) */
         inToken = read_token();
-        if (!match(rightparenToken, inToken))
-            write_to_file(listingFilePtr, FMT_PARSE_ERROR, rightparenToken.name, inToken.name);
+        if (!match(RParenToken, inToken))
+            write_to_file(listingFilePtr, FMT_PARSE_ERROR, RParenToken.name, inToken.name);
     }
 
     /* FALSEOP */
     else if (match(peekToken, falseToken))
+    {
         read_token();
+        *exprRec = process_literal("0");
+    }
 
     /* TRUEOP */
     else if (match(peekToken, trueToken))
+    {
         read_token();
+        *exprRec = process_literal("1");
+    }
 
     /* NULLOP */
     else if (match(peekToken, nullToken))
+    {
         read_token();
+        *exprRec = process_literal("1");
+    }
 
     else
         status = 0;
@@ -775,39 +838,68 @@ int parse_lPrimary()
  * 
  * @return int 
  */
-int parse_relOp()
+int parse_relOp(struct op_rec * opRec)
 {
-    log_debug("Parse RelOp");
+
+    log_debug("Parsing RelOp.");
+
     int status = 1;
     struct token peekToken = peek_next_token();
 
-    if (match(peekToken, tokenList[TOKEN_ID_LESSOP]) || 
-        match(peekToken, tokenList[TOKEN_ID_LESSEQUALOP]) || 
-        match(peekToken, tokenList[TOKEN_ID_GREATEROP]) || 
-        match(peekToken, tokenList[TOKEN_ID_GREATEREQUALOP]) || 
-        match(peekToken, tokenList[TOKEN_ID_EQUALOP]) || 
-        match(peekToken, tokenList[TOKEN_ID_NOTEQUALOP])
-    )
+    if (match(peekToken, lessOpToken))
+    {
         read_token();
+        *opRec = process_op("<");
+    }
+    else if (match(peekToken, lessEqualOpToken))
+    {
+        read_token();
+        *opRec = process_op("<=");
+    }
+    else if (match(peekToken, greaterOpToken))
+    {
+        read_token();
+        *opRec = process_op(">");
+    }
+    else if (match(peekToken, greaterEqualOpToken))
+    {
+        read_token();
+        *opRec = process_op(">=");
+    }
+    else if (match(peekToken, equalOpToken))
+    {
+        read_token();
+        *opRec = process_op("==");
+    }
+    else if (match(peekToken, notEqualOpToken))
+    {
+        read_token();
+        *opRec = process_op("!=");
+    }
     else
         status = 0;
 
     return status;
 }
 
-int parse_ident()
+struct expr_rec parse_ident()
 {
-    int status = 1;
 
-    struct token idToken = tokenList[TOKEN_ID_ID];
+    log_debug("Parsing Ident.");
+    
+    struct expr_rec rec;
+     
     if (match(peek_next_token(), idToken))
     {
         read_token();
+        strcpy(rec.e, buffer);
+        rec.type = IDExpression;
+        process_id(buffer);
     }
     else
-        status = 0;
+        rec.type = NullExpression;
 
-    return status;
+    return rec;
 }
 
 /* EOF */

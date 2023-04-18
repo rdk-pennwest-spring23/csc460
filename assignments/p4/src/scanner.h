@@ -63,7 +63,14 @@ struct token {
     char *name;
 };
 
-struct token errorToken, idToken, intToken, scaneofToken, newlineToken;
+struct token    errorToken, idToken, intToken, scaneofToken, newlineToken, beginToken,
+                endToken, readToken, writeToken, ifToken, thenToken, elseToken,
+                endIfToken, whileToken, endWhileToken, falseToken, trueToken, nullToken,
+                LParenToken, RParenToken, semicolonToken, commaToken, assignOpToken,
+                plusOpToken, minusOpToken, multOpToken, divOpToken, notOpToken, lessOpToken,
+                lessEqualOpToken, greaterOpToken, greaterEqualOpToken, equalOpToken,
+                notEqualOpToken, commentToken;
+
 struct token tokenList[35];
 
 static int stateID = 0;
