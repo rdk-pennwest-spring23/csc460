@@ -6,6 +6,9 @@
  * @brief An LL(1) Parser implementation
  */
 
+#ifndef PARSER_C
+#define PARSER_C
+
 #include "scanner.h"
 #include "parser.h"
 #include "log_util.h"
@@ -791,4 +794,5 @@ int parse_relOp()
     return status;
 }
 
+#endif
 /* EOF */

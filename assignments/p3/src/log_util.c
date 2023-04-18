@@ -10,6 +10,9 @@
  * @brief Program 2: Scanner
  */
 
+#ifndef LOG_UTIL_C
+#define LOG_UTIL_C
+
 #include "log_util.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,3 +53,6 @@ void log_debug(const char* message, ...)
     log_format("DEBUG", message, args);     
     va_end(args);
 }
+
+
+#endif

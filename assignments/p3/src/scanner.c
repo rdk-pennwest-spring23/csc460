@@ -10,7 +10,10 @@
  * @brief Program 2: Scanner
  */
 
-#include "scanner.h"
+#ifndef SCANNER_C
+#define SCANNER_C
+
+
 #include "log_util.h"
 #include "file_util.h"
 #include "parser.h"
@@ -197,7 +200,7 @@ struct token get_next_token()
 
     if (returnToken.id == tokenList[TOKEN_ID_COMMENT].id)
     {
-        while (curChar != 13 && curChar != EOF)
+        while (curChar != '\n' && curChar != EOF)
             curChar = fgetc(inputFilePtr);
             
         fseek(inputFilePtr, -1, SEEK_CUR);
@@ -347,5 +350,5 @@ void print_line_to_listings()
 }
 
 
-
+#endif
 /* EOF */
